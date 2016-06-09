@@ -1,5 +1,5 @@
 {
-    "name": "sedp-mis/base_grid_query",
+    "name": "sedp-mis/base-grid-query",
     "description": "Abstraction for grid query",
     "keywords": ["grid query", "grid", "query", "data"],
     "license": "MIT",
