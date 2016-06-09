@@ -1,0 +1,18 @@
+{
+    "name": "sedp-mis/base_grid_query",
+    "description": "Abstraction for grid query",
+    "keywords": ["grid query", "grid", "query", "data"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Arjon Jason Castro",
+            "email": "ajcastro29@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "SedpMis\\BaseGridQuery\\": "src/"
+        }
+    }
+}
