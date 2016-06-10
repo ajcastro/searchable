@@ -16,5 +16,6 @@
         "psr-4": {
             "SedpMis\\Bases\\GridQuery\\": "src/"
         }
-    }
+    },
+    "minimum-stability": "dev"
 }
