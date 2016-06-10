@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SedpMis\\Base\\GridQuery\\": "src"
+            "SedpMis\\BaseGridQuery\\": "src"
         }
     },
     "minimum-stability": "dev"

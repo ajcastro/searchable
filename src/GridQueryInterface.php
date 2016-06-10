@@ -1,6 +1,6 @@
 <?php
 
-namespace SedpMis\Base\GridQuery;
+namespace SedpMis\BaseGridQuery;
 
 interface GridQueryInterface
 {
