@@ -157,6 +157,6 @@ abstract class BaseGridQuery
      */
     public function initQuery()
     {
-        throw new \Exception("Please create self initQuery() method on ".get_class($this).'.');
+        throw new \Exception('Please create self initQuery() method on '.get_class($this).'.');
     }
 }
