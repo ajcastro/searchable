@@ -155,5 +155,8 @@ abstract class BaseGridQuery
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function initQuery(){}
+    public function initQuery()
+    {
+        throw new \Exception("Please create self initQuery() method on ".get_class($this).'.');
+    }
 }
