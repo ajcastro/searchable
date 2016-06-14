@@ -2,7 +2,7 @@
 
 namespace SedpMis\BaseGridQuery;
 
-use Illuminate\Database\DatabaseManager as DB;
+use Illuminate\Support\Facades\DB as DB;
 
 abstract class BaseGridQuery
 {
@@ -155,5 +155,5 @@ abstract class BaseGridQuery
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    abstract public function initQuery();
+    public function initQuery(){}
 }
