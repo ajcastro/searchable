@@ -138,6 +138,10 @@ abstract class BaseGridQuery
      */
     public function __call($method, $parameters)
     {
+        if (!$this->query) {
+            throw new \Exception("Property \$query is not set. Cannot call method {$method} on object of ".static::class.'.');
+        }
+
         call_user_func_array([$this->query, $method], $parameters);
 
         return $this;
