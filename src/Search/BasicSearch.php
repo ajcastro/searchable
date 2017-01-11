@@ -56,6 +56,28 @@ class BasicSearch
     }
 
     /**
+     * Set searchable columns.
+     *
+     * @param array $searchable
+     */
+    public function setSearchable($searchable = [])
+    {
+        $this->searchable = $searchable;
+
+        return $this;
+    }
+
+    /**
+     * Return the grid query instance.
+     *
+     * @return \SedpMis\BaseGridQuery\BaseGridQuery
+     */
+    public function gridQuery()
+    {
+        return $this->gridQuery;
+    }
+
+    /**
      * Parse input to search.
      *
      * @param  string|mixed $input
