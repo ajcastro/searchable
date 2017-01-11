@@ -8,7 +8,7 @@ abstract class BaseGridQuery
 {
     /**
      * Initialized query.
-     * 
+     *
      * @var \Illuminate\Database\Eloquent\Builder
      */
     protected $query;
