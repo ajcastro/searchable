@@ -36,18 +36,27 @@ class BasicSearch
     protected $sort = true;
 
     /**
+     * Columns for sorting query.
+     *
+     * @var array
+     */
+    protected $sortColumns = [];
+
+    /**
      * Construct.
      *
      * @param \SedpMis\BaseGridQuery\BaseGridQuery $gridQuery
      * @param array $searchable
      * @param bool $sort
+     * @param array $sortColumns
      */
-    public function __construct($gridQuery, $searchable = [], $sort = true)
+    public function __construct($gridQuery, $searchable = [], $sort = true, $sortColumns = [])
     {
-        $this->gridQuery  = ($gridQuery instanceof BaseGridQuery) ? $gridQuery : null;
-        $this->query      = (!$gridQuery instanceof BaseGridQuery) ? $gridQuery : null; // assume as query builder when it is not gridQuery
-        $this->searchable = $searchable;
-        $this->sort       = $sort;
+        $this->gridQuery   = ($gridQuery instanceof BaseGridQuery) ? $gridQuery : null;
+        $this->query       = (!$gridQuery instanceof BaseGridQuery) ? $gridQuery : null; // assume as query builder when it is not gridQuery
+        $this->searchable  = $searchable;
+        $this->sort        = $sort;
+        $this->sortColumns = $sortColumns;
     }
 
     /**
@@ -144,6 +153,16 @@ class BasicSearch
     }
 
     /**
+     * Return the columns for sorting query.
+     *
+     * @return array
+     */
+    public function sortColumns()
+    {
+        return $this->sortColumns ?: $this->gridQuery->columns();
+    }
+
+    /**
      * Apply sort in query. By default using mysql locate function.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
@@ -152,14 +171,18 @@ class BasicSearch
      */
     protected function applySort($query, $searchStr)
     {
-        $sqls          = [];
-        $concatColumns = 'CONCAT('.join(',', $this->gridQuery->columns()).')';
+        if (count($sortColumns = $this->sortColumns()) == 0) {
+            return $query;
+        }
+
+        $sqls              = [];
+        $concatSortColumns = 'CONCAT('.join(',', $sortColumns).')';
 
         for ($i = 0, $j = strlen($searchStr); $i < $j; $i++) {
             $character = $searchStr[$i];
 
             $counter = $i + 1;
-            $sqls[]  = "LOCATE('".addslashes($character)."', {$concatColumns}, {$counter})";
+            $sqls[]  = "LOCATE('".addslashes($character)."', {$concatSortColumns}, {$counter})";
         }
 
         $query->addSelect(DB::raw('('.implode('+', $sqls).') AS search_position'));
