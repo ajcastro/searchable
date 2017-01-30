@@ -137,7 +137,7 @@ class BasicSearch
      */
     protected function parseSearchStr($searchStr)
     {
-        $searchStr = preg_replace('/[^A-Za-z0-9 ]/', '', $searchStr);
+        $searchStr = preg_replace('/[^A-Za-z0-9]/', '', $searchStr);
 
         return '%'.join('%', str_split($searchStr)).'%';
     }
