@@ -3,6 +3,7 @@
 namespace SedpMis\BaseGridQuery\Search;
 
 use SedpMis\BaseGridQuery\BaseGridQuery;
+use DB;
 
 class BasicSearch
 {
