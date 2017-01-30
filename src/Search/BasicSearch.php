@@ -80,10 +80,10 @@ class BasicSearch
     {
         $conditions = [];
 
-        $searchStr = $this->parseSearchStr($searchStr);
+        $parsedStr = $this->parseSearchStr($searchStr);
 
         foreach ($this->searchable() as $column) {
-            $conditions[] = $column.' like "'.$searchStr.'"';
+            $conditions[] = $column.' like "'.$parsedStr.'"';
         }
 
         $query = $this->query()->havingRaw('('.join(' OR ', $conditions).')');
@@ -153,7 +153,7 @@ class BasicSearch
     protected function applySort($query, $searchStr)
     {
         $sqls          = [];
-        $concatColumns = 'CONCAT('.join(',', $this->searchable()).')';
+        $concatColumns = 'CONCAT('.join(',', $this->gridQuery->columns()).')';
 
         for ($i = 0, $j = strlen($searchStr); $i < $j; $i++) {
             $character = $searchStr[$i];
