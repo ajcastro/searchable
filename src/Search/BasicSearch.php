@@ -159,7 +159,11 @@ class BasicSearch
      */
     public function sortColumns()
     {
-        return $this->sortColumns ?: $this->gridQuery->columns();
+        return $this->sortColumns ?: (
+            method_exists($this->gridQuery, 'sortColumns') ? 
+                $this->gridQuery->sortColumns() :
+                $this->gridQuery->columns()
+        );
     }
 
     /**
@@ -174,6 +178,10 @@ class BasicSearch
         if (empty($searchStr) || count($sortColumns = $this->sortColumns()) == 0) {
             return $query;
         }
+
+        $sortColumns = array_map(function ($column) {
+            return DB::raw("IFNULL(({$column}), '')");
+        }, $sortColumns);
 
         $sqls              = [];
         $concatSortColumns = 'CONCAT('.join(',', $sortColumns).')';
