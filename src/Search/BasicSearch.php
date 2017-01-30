@@ -171,7 +171,7 @@ class BasicSearch
      */
     protected function applySort($query, $searchStr)
     {
-        if (count($sortColumns = $this->sortColumns()) == 0) {
+        if (empty($searchStr) || count($sortColumns = $this->sortColumns()) == 0) {
             return $query;
         }
 
