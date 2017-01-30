@@ -161,7 +161,7 @@ class BasicSearch
         }
 
         $query->addSelect(DB::raw("(" . implode('+', $sqls) .") AS search_position"));
-        $query->orderBy('search_position', 'desc');
+        $query->orderBy('search_position', 'asc');
 
         return $query;
     }
