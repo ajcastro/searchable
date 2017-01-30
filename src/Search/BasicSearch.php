@@ -30,7 +30,7 @@ class BasicSearch
     /**
      * If query should be sorted.
      *
-     * @var boolean
+     * @var bool
      */
     protected $sort = true;
 
@@ -46,7 +46,7 @@ class BasicSearch
         $this->gridQuery  = ($gridQuery instanceof BaseGridQuery) ? $gridQuery : null;
         $this->query      = (!$gridQuery instanceof BaseGridQuery) ? $gridQuery : null; // assume as query builder when it is not gridQuery
         $this->searchable = $searchable;
-        $this->sort  = $sort;
+        $this->sort       = $sort;
     }
 
     /**
@@ -137,7 +137,8 @@ class BasicSearch
      */
     protected function parseSearchStr($searchStr)
     {
-        $searchStr = preg_replace("/[^A-Za-z0-9 ]/", '', $searchStr);
+        $searchStr = preg_replace('/[^A-Za-z0-9 ]/', '', $searchStr);
+
         return '%'.join('%', str_split($searchStr)).'%';
     }
 
@@ -150,17 +151,17 @@ class BasicSearch
      */
     protected function applySort($query, $searchStr)
     {
-        $sqls = [];
+        $sqls          = [];
         $concatColumns = 'CONCAT('.join(',', $this->searchable()).')';
 
         for ($i = 0, $j = strlen($searchStr); $i < $j; $i++) {
             $character = $searchStr[$i];
-            
+
             $counter = $i + 1;
-            $sqls[]  = "LOCATE('" . addslashes($character) . "', {$concatColumns}, {$counter})";
+            $sqls[]  = "LOCATE('".addslashes($character)."', {$concatColumns}, {$counter})";
         }
 
-        $query->addSelect(DB::raw("(" . implode('+', $sqls) .") AS search_position"));
+        $query->addSelect(DB::raw('('.implode('+', $sqls).') AS search_position'));
         $query->orderBy('search_position', 'asc');
 
         return $query;
