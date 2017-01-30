@@ -193,8 +193,8 @@ class BasicSearch
             $sqls[]  = "LOCATE('".addslashes($character)."', {$concatSortColumns}, {$counter})";
         }
 
-        $query->addSelect(DB::raw('('.implode('+', $sqls).') AS search_position'));
-        $query->orderBy('search_position', 'asc');
+        $query->addSelect(DB::raw('('.implode('+', $sqls).') AS sort_index'));
+        $query->orderBy('sort_index', 'asc');
 
         return $query;
     }
