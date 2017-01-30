@@ -145,10 +145,24 @@ class BasicSearch
      * Apply sort in query. By default using mysql locate function.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $searchStr
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    protected function applySort($query)
+    protected function applySort($query, $searchStr)
     {
-        
+        $sqls = [];
+        $concatColumns = 'CONCAT('.join(',', $this->searchable()).')';
+
+        for ($i = 0, $j = strlen($searchStr); $i < $j; $i++) {
+            $character = $searchStr[$i];
+            
+            $counter = $i + 1;
+            $sqls[]  = "LOCATE('" . addslashes($character) . "', {$concatColumns}, {$counter})";
+        }
+
+        $query->addSelect(DB::raw("(" . implode('+', $sqls) .") AS search_position"));
+        $query->orderBy('search_position', 'desc');
+
+        return $query;
     }
 }
