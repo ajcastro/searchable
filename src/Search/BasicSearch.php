@@ -2,6 +2,8 @@
 
 namespace SedpMis\BaseGridQuery\Search;
 
+use SedpMis\BaseGridQuery\BaseGridQuery;
+
 class BasicSearch
 {
     /**
@@ -19,13 +21,32 @@ class BasicSearch
     protected $gridQuery;
 
     /**
+     * The query for the search.
+     *
+     * @var \Illuminate\Database\Eloquent\Builder
+     */
+    protected $query;
+
+    /**
+     * If query should be sorted.
+     *
+     * @var boolean
+     */
+    protected $sort = true;
+
+    /**
      * Construct.
      *
      * @param \SedpMis\BaseGridQuery\BaseGridQuery $gridQuery
+     * @param array $searchable
+     * @param bool $sort
      */
-    public function __construct($gridQuery)
+    public function __construct($gridQuery, $searchable = [], $sort = true)
     {
-        $this->gridQuery = $gridQuery;
+        $this->gridQuery  = ($gridQuery instanceof BaseGridQuery) ? $gridQuery : null;
+        $this->query      = (!$gridQuery instanceof BaseGridQuery) ? $gridQuery : null; // assume as query builder when it is not gridQuery
+        $this->searchable = $searchable;
+        $this->sort  = $sort;
     }
 
     /**
@@ -36,6 +57,16 @@ class BasicSearch
     public function searchable()
     {
         return $this->searchable ?: array_keys($this->gridQuery->columns());
+    }
+
+    /**
+     * Return the query for the search.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function query()
+    {
+        return $this->query ?: $this->gridQuery->makeQuery();
     }
 
     /**
@@ -52,7 +83,13 @@ class BasicSearch
             $conditions[] = $column.' like "'.$this->parseInput($input).'"';
         }
 
-        return $this->gridQuery->makeQuery()->havingRaw('('.join(' OR ', $conditions).')');
+        $query = $this->query()->havingRaw('('.join(' OR ', $conditions).')');
+
+        if ($this->sort) {
+            $this->applySort($query);
+        }
+
+        return $query;
     }
 
     /**
@@ -63,6 +100,19 @@ class BasicSearch
     public function setSearchable($searchable = [])
     {
         $this->searchable = $searchable;
+
+        return $this;
+    }
+
+    /**
+     * Set if query should be sorted.
+     *
+     * @param  bool $sort
+     * @return $this
+     */
+    public function sort($sort)
+    {
+        $this->sort = $sort;
 
         return $this;
     }
@@ -85,6 +135,18 @@ class BasicSearch
      */
     protected function parseInput($input)
     {
+        $input = preg_replace("/[^A-Za-z0-9 ]/", '', $input);
         return '%'.join('%', str_split($input)).'%';
+    }
+
+    /**
+     * Apply sort in query. By default using mysql locate function.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function applySort($query)
+    {
+        
     }
 }
