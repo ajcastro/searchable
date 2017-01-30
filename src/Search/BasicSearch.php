@@ -72,21 +72,23 @@ class BasicSearch
     /**
      * Apply search query.
      *
-     * @param  string|mixed  $input
+     * @param  string|mixed  $searchStr
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function search($input)
+    public function search($searchStr)
     {
         $conditions = [];
 
+        $searchStr = $this->parseSearchStr($searchStr);
+
         foreach ($this->searchable() as $column) {
-            $conditions[] = $column.' like "'.$this->parseInput($input).'"';
+            $conditions[] = $column.' like "'.$searchStr.'"';
         }
 
         $query = $this->query()->havingRaw('('.join(' OR ', $conditions).')');
 
         if ($this->sort) {
-            $this->applySort($query);
+            $this->applySort($query, $searchStr);
         }
 
         return $query;
@@ -128,15 +130,15 @@ class BasicSearch
     }
 
     /**
-     * Parse input to search.
+     * Parse string to search.
      *
-     * @param  string|mixed $input
+     * @param  string|mixed $searchStr
      * @return string
      */
-    protected function parseInput($input)
+    protected function parseSearchStr($searchStr)
     {
-        $input = preg_replace("/[^A-Za-z0-9 ]/", '', $input);
-        return '%'.join('%', str_split($input)).'%';
+        $searchStr = preg_replace("/[^A-Za-z0-9 ]/", '', $searchStr);
+        return '%'.join('%', str_split($searchStr)).'%';
     }
 
     /**
