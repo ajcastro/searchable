@@ -160,7 +160,7 @@ class BasicSearch
     public function sortColumns()
     {
         return $this->sortColumns ?: (
-            method_exists($this->gridQuery, 'sortColumns') ? 
+            method_exists($this->gridQuery, 'sortColumns') ?
                 $this->gridQuery->sortColumns() :
                 $this->gridQuery->columns()
         );
