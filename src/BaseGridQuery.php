@@ -2,6 +2,8 @@
 
 namespace SedpMis\BaseGridQuery;
 
+use SedpMis\Lib\PageLimitOffset;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\DB as DB;
 use SedpMis\BaseGridQuery\Search\BasicSearch;
 
@@ -13,6 +15,13 @@ abstract class BaseGridQuery
      * @var \Illuminate\Database\Eloquent\Builder
      */
     protected $query;
+
+    /**
+     * If the grid query is auto paginated. Useful for paginated rest-api.
+     *
+     * @var boolean
+     */
+    protected $paginated = false;
 
     /**
      * Return the initialized specific query. This contains the joins logic and condition that make the query specific.
@@ -31,7 +40,37 @@ abstract class BaseGridQuery
      */
     public function makeQuery()
     {
-        return $this->query()->select($this->makeSelect($this->columns()));
+        $query = $this->query()->select($this->makeSelect($this->columns()));
+
+        if ($this->paginated) {
+            $query->limit($this->paginator()->limit());
+            $query->offset($this->paginator()->offset());
+        }
+
+        return $query;
+    }
+
+    /**
+     * Set if auto-paginated.
+     *
+     * @param  bool $bool
+     * @return $this
+     */
+    public function paginate($bool)
+    {
+        $this->paginate = $bool;
+
+        return $this;
+    }
+
+    /**
+     * Return a paginator returning limit and offset base from the request query parameters `page` and `per_page`
+     *
+     * @return mixed
+     */
+    public function paginator()
+    {
+        return new PageLimitOffset(Request::get('per_page', 0), Request::get('page', 0));
     }
 
     /**
