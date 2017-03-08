@@ -70,7 +70,7 @@ abstract class BaseGridQuery
      */
     public function paginator()
     {
-        return new PageLimitOffset(Request::get('per_page', 0), Request::get('page', 0));
+        return new PageLimitOffset(Request::get('per_page', 15), Request::get('page', 1));
     }
 
     /**
