@@ -56,7 +56,7 @@ abstract class BaseGridQuery
      * @param  bool $paginated
      * @return $this
      */
-    public function paginate($paginated)
+    public function paginate($paginated = true)
     {
         $this->paginated = $paginated;
 
