@@ -53,12 +53,12 @@ abstract class BaseGridQuery
     /**
      * Set if auto-paginated.
      *
-     * @param  bool $bool
+     * @param  bool $paginated
      * @return $this
      */
-    public function paginate($bool)
+    public function paginate($paginated)
     {
-        $this->paginate = $bool;
+        $this->paginated = $paginated;
 
         return $this;
     }
