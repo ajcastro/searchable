@@ -185,6 +185,6 @@ abstract class BaseGridQuery
      */
     public static function make()
     {
-        return new static;        
+        return new static;
     }
 }
