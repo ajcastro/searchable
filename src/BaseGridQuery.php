@@ -19,7 +19,7 @@ abstract class BaseGridQuery
     /**
      * If the grid query is auto paginated. Useful for paginated rest-api.
      *
-     * @var boolean
+     * @var bool
      */
     protected $paginated = false;
 
@@ -64,7 +64,7 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Return a paginator returning limit and offset base from the request query parameters `page` and `per_page`
+     * Return a paginator returning limit and offset base from the request query parameters `page` and `per_page`.
      *
      * @return mixed
      */
