@@ -3,6 +3,7 @@
 namespace SedpMis\BaseGridQuery;
 
 use Illuminate\Support\Facades\DB as DB;
+use SedpMis\BaseGridQuery\Search\BasicSearch;
 
 abstract class BaseGridQuery
 {
@@ -148,11 +149,17 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Columns declaration of the report grid.
+     * Apply a search query.
      *
-     * @return array
+     * @param  string $searchStr
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    abstract public function columns();
+    public function search($searchStr)
+    {
+        $searcher = new BasicSearch($this);
+
+        return $searcher->search($searchStr);
+    }
 
     /**
      * Initialize query.
@@ -162,5 +169,22 @@ abstract class BaseGridQuery
     public function initQuery()
     {
         throw new \Exception('Please create self initQuery() method on '.get_class($this).'.');
+    }
+
+    /**
+     * Columns declaration of the report grid.
+     *
+     * @return array
+     */
+    abstract public function columns();
+
+    /**
+     * Return new instance.
+     *
+     * @return static
+     */
+    public static function make()
+    {
+        return new static;        
     }
 }
