@@ -66,7 +66,7 @@ class BasicSearch
      */
     public function searchable()
     {
-        return $this->searchable ?: array_keys($this->gridQuery->columns());
+        return $this->searchable ?: $this->gridQuery->getColumnNames();
     }
 
     /**
