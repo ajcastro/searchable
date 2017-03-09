@@ -172,7 +172,7 @@ abstract class BaseGridQuery
                 $columnNames[] = $key;
             } elseif (str_contains($column, '.')) {
                 list($table, $columnName) = explode('.', $column);
-                $columnNames[] = $columnName;
+                $columnNames[]            = $columnName;
             } else {
                 $columnNames[] = $column;
             }
