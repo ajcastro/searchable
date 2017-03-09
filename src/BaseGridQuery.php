@@ -159,29 +159,6 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Get the names of columns to be used in the query result.
-     *
-     * @return array
-     */
-    public function getColumnNames()
-    {
-        $columnNames = [];
-
-        foreach ($this->columns() as $key => $column) {
-            if (is_string($key)) {
-                $columnNames[] = $key;
-            } elseif (str_contains($column, '.')) {
-                list($table, $columnName) = explode('.', $column);
-                $columnNames[]            = $columnName;
-            } else {
-                $columnNames[] = $column;
-            }
-        }
-
-        return $columnNames;
-    }
-
-    /**
      * Getter for column.
      *
      * @param  string $columnName
@@ -231,6 +208,29 @@ abstract class BaseGridQuery
     public function initQuery()
     {
         throw new \Exception('Please create self initQuery() method on '.get_class($this).'.');
+    }
+
+    /**
+     * Get the names of columns to be used in the query result.
+     *
+     * @return array
+     */
+    public function columnNames()
+    {
+        $columnNames = [];
+
+        foreach ($this->columns() as $key => $column) {
+            if (is_string($key)) {
+                $columnNames[] = $key;
+            } elseif (str_contains($column, '.')) {
+                list($table, $columnName) = explode('.', $column);
+                $columnNames[]            = $columnName;
+            } else {
+                $columnNames[] = $column;
+            }
+        }
+
+        return $columnNames;
     }
 
     /**
