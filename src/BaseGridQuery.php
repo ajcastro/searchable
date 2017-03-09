@@ -121,38 +121,38 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Get the actual column of the given column name.
+     * Get the actual column of the given column key.
      *
-     * @param  string $columnName
+     * @param  string $columnKey
      * @return string|mixed
      */
-    public function getColumn($columnName)
+    public function getColumn($columnKey)
     {
         $columns = $this->columns();
 
-        if (array_key_exists($columnName, $columns)) {
-            return $columns[$columnName];
+        if (array_key_exists($columnKey, $columns)) {
+            return $columns[$columnKey];
         }
 
         foreach ($columns as $column) {
-            if ($column === $columnName || ends_with($column, ".{$columnName}")) {
+            if ($column === $columnKey || ends_with($column, ".{$columnKey}")) {
                 return $column;
             }
         }
     }
 
     /**
-     * Get the actual columns of the given column names.
+     * Get the actual columns of the given column keys.
      *
-     * @param  array  $columnNames
+     * @param  array  $columnKeys
      * @return array
      */
-    public function getColumns(array $columnNames)
+    public function getColumns(array $columnKeys)
     {
         $columns = [];
 
-        foreach ($columnNames as $columnName) {
-            $columns[] = $this->getColumn($columnName);
+        foreach ($columnKeys as $columnKey) {
+            $columns[] = $this->getColumn($columnKey);
         }
 
         return $columns;
@@ -161,12 +161,12 @@ abstract class BaseGridQuery
     /**
      * Getter for column.
      *
-     * @param  string $columnName
+     * @param  string $columnKey
      * @return string|mixed
      */
-    public function __get($columnName)
+    public function __get($columnKey)
     {
-        return $this->getColumn($columnName);
+        return $this->getColumn($columnKey);
     }
 
     /**
@@ -211,26 +211,26 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Get the names of columns to be used in the query result.
+     * Get the keys of columns to be used in the query result.
      *
      * @return array
      */
-    public function columnNames()
+    public function columnKeys()
     {
-        $columnNames = [];
+        $columnKeys = [];
 
         foreach ($this->columns() as $key => $column) {
             if (is_string($key)) {
-                $columnNames[] = $key;
+                $columnKeys[] = $key;
             } elseif (str_contains($column, '.')) {
-                list($table, $columnName) = explode('.', $column);
-                $columnNames[]            = $columnName;
+                list($table, $columnKey) = explode('.', $column);
+                $columnKeys[]            = $columnKey;
             } else {
-                $columnNames[] = $column;
+                $columnKeys[] = $column;
             }
         }
 
-        return $columnNames;
+        return $columnKeys;
     }
 
     /**
