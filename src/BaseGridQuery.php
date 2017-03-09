@@ -159,11 +159,11 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Return the names of columns to be used in the query result.
+     * Get the names of columns to be used in the query result.
      *
      * @return array
      */
-    public function columnNames()
+    public function getColumnNames()
     {
         $columnNames = [];
 
