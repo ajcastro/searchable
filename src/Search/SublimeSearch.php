@@ -4,7 +4,10 @@ namespace SedpMis\BaseGridQuery\Search;
 
 use DB;
 
-class BasicSearch
+/**
+ * A search query resembling the behaviour in sublime file search (ctrl+p).
+ */
+class SublimeSearch
 {
     /**
      * Searchable columns.

@@ -5,7 +5,7 @@ namespace SedpMis\BaseGridQuery;
 use SedpMis\Lib\PageLimitOffset;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\DB as DB;
-use SedpMis\BaseGridQuery\Search\BasicSearch;
+use SedpMis\BaseGridQuery\Search\SublimeSearch;
 
 abstract class BaseGridQuery
 {
@@ -241,7 +241,7 @@ abstract class BaseGridQuery
      */
     public function search($searchStr)
     {
-        $searcher = new BasicSearch(
+        $searcher = new SublimeSearch(
             $this->makeQuery(),
             $this->columnKeys(),
             true,
