@@ -79,11 +79,11 @@ abstract class BaseGridQuery
      * @param  int $page
      * @return $this
      */
-    public function paginate($perPage, $page = 1)
+    public function paginate($perPage = null, $page = 1)
     {
         $this->paginated(true);
 
-        $this->perPage = $perPage;
+        $this->perPage = $perPage ?: $this->perPage;
         $this->page    = $page;
 
         return $this;
