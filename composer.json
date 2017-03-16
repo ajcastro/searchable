@@ -1,7 +1,7 @@
 {
     "name": "sedp-mis/base-grid-query",
     "description": "Abstraction for grid query",
-    "keywords": ["grid query", "grid", "query", "data"],
+    "keywords": ["laravel", "grid query", "grid", "query", "data"],
     "license": "MIT",
     "authors": [
         {
