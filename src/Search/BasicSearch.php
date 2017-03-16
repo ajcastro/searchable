@@ -43,6 +43,15 @@ class BasicSearch
     protected $sortColumns = [];
 
     /**
+     * Search operator.
+     * Whether to use where or having in query to compare columns against search string.
+     * Values: where, having.
+     *
+     * @var string
+     */
+    protected $searchOperator = 'having';
+
+    /**
      * Construct.
      *
      * @param \SedpMis\BaseGridQuery\BaseGridQuery $gridQuery
@@ -50,13 +59,14 @@ class BasicSearch
      * @param bool $sort
      * @param array $sortColumns
      */
-    public function __construct($gridQuery, $searchable = [], $sort = true, $sortColumns = [])
+    public function __construct($gridQuery, $searchable = [], $sort = true, $sortColumns = [], $searchOperator = 'having')
     {
-        $this->gridQuery   = ($gridQuery instanceof BaseGridQuery) ? $gridQuery : null;
-        $this->query       = (!$gridQuery instanceof BaseGridQuery) ? $gridQuery : null; // assume as query builder when it is not gridQuery
-        $this->searchable  = $searchable;
-        $this->sort        = $sort;
-        $this->sortColumns = $sortColumns;
+        $this->gridQuery      = ($gridQuery instanceof BaseGridQuery) ? $gridQuery : null;
+        $this->query          = (!$gridQuery instanceof BaseGridQuery) ? $gridQuery : null; // assume as query builder when it is not gridQuery
+        $this->searchable     = $searchable;
+        $this->sort           = $sort;
+        $this->sortColumns    = $sortColumns;
+        $this->searchOperator = $searchOperator;
     }
 
     /**
@@ -95,7 +105,8 @@ class BasicSearch
             $conditions[] = $column.' like "'.$parsedStr.'"';
         }
 
-        $query = $this->query()->havingRaw('('.join(' OR ', $conditions).')');
+        $method = $this->searchOperator.'Raw';
+        $query  = $this->query()->{$method}('('.join(' OR ', $conditions).')');
 
         if ($this->sort) {
             $this->applySort($query, $searchStr);
