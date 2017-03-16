@@ -110,7 +110,7 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Return a page limitter returning limit and offset base from the request query parameters `page` and `per_page`.
+     * Return a page limitter returning limit and offset base from page and per_page parameters.
      *
      * @return mixed
      */
