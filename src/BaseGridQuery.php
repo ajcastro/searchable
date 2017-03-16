@@ -24,6 +24,20 @@ abstract class BaseGridQuery
     protected $paginated = false;
 
     /**
+     * Default number of items per page.
+     *
+     * @var int
+     */
+    protected $perPage = 15;
+
+    /**
+     * Initial page.
+     *
+     * @var int
+     */
+    protected $page = 1;
+
+    /**
      * Return the initialized specific query. This contains the joins logic and condition that make the query specific.
      *
      * @return \Illuminate\Database\Eloquent\Builder
@@ -42,11 +56,6 @@ abstract class BaseGridQuery
     {
         $query = $this->query()->select($this->makeSelect($this->columns()));
 
-        if ($this->paginated) {
-            $query->limit($this->paginator()->limit());
-            $query->offset($this->paginator()->offset());
-        }
-
         return $query;
     }
 
@@ -56,7 +65,7 @@ abstract class BaseGridQuery
      * @param  bool $paginated
      * @return $this
      */
-    public function paginate($paginated = true)
+    public function paginated($paginated = true)
     {
         $this->paginated = $paginated;
 
@@ -64,13 +73,50 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Return a paginator returning limit and offset base from the request query parameters `page` and `per_page`.
+     * Set per page and page parameters.
+     *
+     * @param  int  $perPage
+     * @param  int $page
+     * @return $this
+     */
+    public function paginate($perPage, $page = 1)
+    {
+        $this->paginated(true);
+
+        $this->perPage = $perPage;
+        $this->page    = $page;
+
+        return $this;
+    }
+
+    /**
+     * Return the number of per page items.
+     *
+     * @return int
+     */
+    public function perPage()
+    {
+        return Request::get('per_page', $this->perPage);
+    }
+
+    /**
+     * Return the current page.
+     *
+     * @return int
+     */
+    public function page()
+    {
+        return Request::get('page', $this->page);
+    }
+
+    /**
+     * Return a page limitter returning limit and offset base from the request query parameters `page` and `per_page`.
      *
      * @return mixed
      */
-    public function paginator()
+    public function pageLimitter()
     {
-        return new PageLimitOffset(Request::get('per_page', 15), Request::get('page', 1));
+        return new PageLimitOffset($this->perPage(), $this->page());
     }
 
     /**
@@ -195,9 +241,22 @@ abstract class BaseGridQuery
      */
     public function search($searchStr)
     {
-        $searcher = new BasicSearch($this);
+        $searcher = new BasicSearch(
+            $this->makeQuery(),
+            $this->columnKeys(),
+            true,
+            method_exists($this, 'sortColumns') ? $this->sortColumns() : $this->columns(),
+            'having'
+        );
 
-        return $searcher->search($searchStr);
+        $query = $searcher->search($searchStr);
+
+        if ($this->paginated) {
+            $query->limit($this->pageLimitter()->limit());
+            $query->offset($this->pageLimitter()->offset());
+        }
+
+        return $query;
     }
 
     /**

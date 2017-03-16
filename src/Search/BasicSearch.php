@@ -2,7 +2,6 @@
 
 namespace SedpMis\BaseGridQuery\Search;
 
-use SedpMis\BaseGridQuery\BaseGridQuery;
 use DB;
 
 class BasicSearch
@@ -13,13 +12,6 @@ class BasicSearch
      * @var array
      */
     protected $searchable = [];
-
-    /**
-     * Grid query instance.
-     *
-     * @var \SedpMis\BaseGridQuery\BaseGridQuery
-     */
-    protected $gridQuery;
 
     /**
      * The query for the search.
@@ -54,15 +46,14 @@ class BasicSearch
     /**
      * Construct.
      *
-     * @param \SedpMis\BaseGridQuery\BaseGridQuery $gridQuery
+     * @param \Illuminate\Database\Eloquent\Builder $query
      * @param array $searchable
      * @param bool $sort
      * @param array $sortColumns
      */
-    public function __construct($gridQuery, $searchable = [], $sort = true, $sortColumns = [], $searchOperator = 'having')
+    public function __construct($query, $searchable = [], $sort = true, $sortColumns = [], $searchOperator = 'having')
     {
-        $this->gridQuery      = ($gridQuery instanceof BaseGridQuery) ? $gridQuery : null;
-        $this->query          = (!$gridQuery instanceof BaseGridQuery) ? $gridQuery : null; // assume as query builder when it is not gridQuery
+        $this->query          = $query;
         $this->searchable     = $searchable;
         $this->sort           = $sort;
         $this->sortColumns    = $sortColumns;
@@ -76,7 +67,7 @@ class BasicSearch
      */
     public function searchable()
     {
-        return $this->searchable ?: $this->gridQuery->columnKeys();
+        return $this->searchable;
     }
 
     /**
@@ -86,7 +77,7 @@ class BasicSearch
      */
     public function query()
     {
-        return $this->query ?: $this->gridQuery->makeQuery();
+        return $this->query;
     }
 
     /**
@@ -141,16 +132,6 @@ class BasicSearch
     }
 
     /**
-     * Return the grid query instance.
-     *
-     * @return \SedpMis\BaseGridQuery\BaseGridQuery
-     */
-    public function gridQuery()
-    {
-        return $this->gridQuery;
-    }
-
-    /**
      * Parse string to search.
      *
      * @param  string|mixed $searchStr
@@ -170,11 +151,7 @@ class BasicSearch
      */
     public function sortColumns()
     {
-        return $this->sortColumns ?: (
-            method_exists($this->gridQuery, 'sortColumns') ?
-                $this->gridQuery->sortColumns() :
-                $this->gridQuery->columns()
-        );
+        return $this->sortColumns;
     }
 
     /**
