@@ -240,15 +240,7 @@ abstract class BaseGridQuery
      */
     public function search($searchStr)
     {
-        $searcher = new SublimeSearch(
-            $this->makeQuery(),
-            $this->columnKeys(),
-            true,
-            method_exists($this, 'sortColumns') ? $this->sortColumns() : $this->columns(),
-            'having'
-        );
-
-        $query = $searcher->search($searchStr);
+        $query = $this->searcher()->search($searchStr);
 
         if ($this->paginated) {
             $query->limit($this->pageLimitter()->limit());
@@ -256,6 +248,22 @@ abstract class BaseGridQuery
         }
 
         return $query;
+    }
+
+    /**
+     * Return a searcher, the search query logic and algorithm.
+     *
+     * @return mixed
+     */
+    public function searcher()
+    {
+        return new SublimeSearch(
+            $this->makeQuery(),
+            $this->columnKeys(),
+            true,
+            method_exists($this, 'sortColumns') ? $this->sortColumns() : $this->columns(),
+            'having'
+        );
     }
 
     /**
