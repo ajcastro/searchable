@@ -18,7 +18,7 @@ class SearchableModel extends BaseGridQuery
 
     public function getSearchableColumns($model, $searchableColumns)
     {
-        if (is_null($searchableColumns || $searchableColumns == ['*'])) {
+        if (is_null($searchableColumns) || $searchableColumns == ['*']) {
             return Schema::getColumnListing($model->getTable());
         }
 
