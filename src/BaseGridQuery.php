@@ -37,6 +37,15 @@ abstract class BaseGridQuery
     protected $page = 1;
 
     /**
+     * Search operator.
+     * Whether to use where or having in query to compare columns against search string.
+     * Values: where, having.
+     *
+     * @var string
+     */
+    protected $searchOperator = 'having';
+
+    /**
      * Return the initialized specific query. This contains the joins logic and condition that make the query specific.
      *
      * @return \Illuminate\Database\Eloquent\Builder
@@ -262,8 +271,21 @@ abstract class BaseGridQuery
             $this->columnKeys(),
             true,
             method_exists($this, 'sortColumns') ? $this->sortColumns() : $this->columns(),
-            'having'
+            $this->searchOperator
         );
+    }
+
+    /**
+     * Set search operator.
+     *
+     * @param  string $searchOperator
+     * @return $this
+     */
+    public function setSearchOperator($searchOperator)
+    {
+        $this->searchOperator = $searchOperator;
+
+        return $this;
     }
 
     /**
