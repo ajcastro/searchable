@@ -249,7 +249,17 @@ abstract class BaseGridQuery
      */
     public function search($searchStr)
     {
-        $query = $this->searcher()->search($searchStr);
+        return $this->searcher()->search($searchStr);
+    }
+
+    /**
+     * Prepare and return the searchable query.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function searchableQuery()
+    {
+        $query = $this->makeQuery();
 
         if ($this->paginated) {
             $query->limit($this->pageLimitter()->limit());
@@ -267,8 +277,8 @@ abstract class BaseGridQuery
     public function searcher()
     {
         return new SublimeSearch(
-            $this->makeQuery(),
-            $this->columnKeys(),
+            $this->searchableQuery(),
+            $this->searchOperator === 'having' ? $this->columnKeys() : array_values($this->columns()),
             true,
             method_exists($this, 'sortColumns') ? $this->sortColumns() : $this->columns(),
             $this->searchOperator
