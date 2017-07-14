@@ -308,7 +308,7 @@ abstract class BaseGridQuery
     /**
      * Set sortSearch value.
      *
-     * @param  boolean $bool
+     * @param  bool $bool
      * @return $this
      */
     public function sortSearch($sortSearch = true)
