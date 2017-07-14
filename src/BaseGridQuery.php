@@ -46,6 +46,13 @@ abstract class BaseGridQuery
     protected $searchOperator = 'having';
 
     /**
+     * If searching will be sorted by sort_index.
+     *
+     * @var bool
+     */
+    protected $sortSearch = true;
+
+    /**
      * Return the initialized specific query. This contains the joins logic and condition that make the query specific.
      *
      * @return \Illuminate\Database\Eloquent\Builder
@@ -279,7 +286,7 @@ abstract class BaseGridQuery
         return new SublimeSearch(
             $this->searchableQuery(),
             $this->searchOperator === 'having' ? $this->columnKeys() : array_values($this->columns()),
-            true,
+            $this->sortSearch,
             method_exists($this, 'sortColumns') ? $this->sortColumns() : $this->columns(),
             $this->searchOperator
         );
@@ -294,6 +301,19 @@ abstract class BaseGridQuery
     public function setSearchOperator($searchOperator)
     {
         $this->searchOperator = $searchOperator;
+
+        return $this;
+    }
+
+    /**
+     * Set sortSearch value.
+     *
+     * @param  boolean $bool
+     * @return $this
+     */
+    public function sortSearch($sortSearch = true)
+    {
+        $this->sortSearch = $sortSearch;
 
         return $this;
     }
