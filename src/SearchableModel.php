@@ -9,6 +9,8 @@ class SearchableModel extends BaseGridQuery
 {
     protected $model;
 
+    protected $searchableColumns;
+
     public function __construct($model, $query = null, $searchableColumns = ['*'])
     {
         $this->model             = $model;
