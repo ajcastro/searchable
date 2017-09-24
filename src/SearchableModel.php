@@ -6,7 +6,7 @@ use SedpMis\BaseGridQuery\Search\SublimeSearch;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Deprecated. Use SublimeSearch instead
+ * Deprecated. Use SublimeSearch instead.
  */
 class SearchableModel extends BaseGridQuery
 {

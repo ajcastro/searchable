@@ -84,6 +84,38 @@ class SublimeSearch
     }
 
     /**
+     * Get the actual searchable column of the given column key.
+     *
+     * @param  string $columnKey
+     * @return string|mixed
+     */
+    public function getColumn($columnKey)
+    {
+        $columns = $this->searchable();
+
+        if (array_key_exists($columnKey, $columns)) {
+            return $columns[$columnKey];
+        }
+
+        foreach ($columns as $column) {
+            if ($column === $columnKey || ends_with($column, ".{$columnKey}")) {
+                return $column;
+            }
+        }
+    }
+
+    /**
+     * Getter for searchable column.
+     *
+     * @param  string $columnKey
+     * @return string|mixed
+     */
+    public function __get($columnKey)
+    {
+        return $this->getColumn($columnKey);
+    }
+
+    /**
      * Apply search query.
      *
      * @param  string|mixed  $searchStr
