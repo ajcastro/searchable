@@ -72,7 +72,64 @@ $results = [
 ```
 
 ### Searchable Model
-TODO
+
+```php
+use SedpMis\BaseGridQuery\SearchableModel;
+
+class Post extends Model 
+{
+    use SearchableModel;
+    
+    /**
+     * Searchable columns of the model. 
+     * If this is empty it will default to all table columns.
+     */ 
+    protected $searchableColumns = [
+        'title',
+        'body',
+    ];
+}
+
+// Usage
+// Call search anywhere
+// This only search the columns available to the table of the model.
+// If there are joins like if you want to include author's name use a custom search query which will be discussed next.
+Post::search('Some post')->paginate(); 
+Post::where('likes', '>', 100)->search('Some post')->paginate(); 
+```
 
 ### Searchable Model Custom Search Query
-TODO
+
+We can use the above example `PostSearch`.
+We can use it as the default search query for the model like:
+```
+class Post 
+{
+    public function searchQuery() 
+    {
+        return new PostSearch;
+    }
+}
+
+// Usage
+Post::search('We can now search for author's full_name like William Shakespeare')->paginate();
+// This will return the models normal structure unlike if you're using the PostSearch which returns only the selected columns.
+// We can do everything as usual like using with() to load relations
+Post::with('authror')->search('William Shakespeare')->paginate();
+```
+
+We can also use custom search query temporarily by passing it as second parameter in `search()` method.
+```
+Post::search('William Shakespeare', new PostSearch)->paginate();
+```
+
+### Using derived columns for order by and where conditions
+
+Usually we have queries that has a derived columns like our example for `PostSearch`'s `author_full_name`. 
+Sometimes we need to sort our query results by this column.
+
+```
+Post::search('Some search')->orderBy(Post::searchQuery()->author_full_name, 'desc')->paginate();
+// This is equivalent to 
+Post::search('Some search')->orderBy('CONCAT(authrors.first_name, ' ', authors.last_name)', 'desc')->paginate();
+```
