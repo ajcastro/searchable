@@ -2,7 +2,8 @@
 
 ### Grid Query Declarative Definition
 
-Helpful for complex table queries with multiple joins and derived columns.
+- Helpful for complex table queries with multiple joins and derived columns.
+- Re-usable queries and column definitions.
 
 ```php
 use SedpMis\BaseGridQuery\BaseGridQuery;
@@ -43,6 +44,10 @@ class PostSearch extends BaseSearchQuery
 {
     public function query()
     {
+        // $this->query is available since this is set on SearchableModel trait scopeSearch() method
+        // If you're going to run this searchQuery on its own and not via scopeSearch()
+        // you should consider to initialize $this->query first or use initQuery() method instead of query()
+        // just like the above example
         return $this->query->leftJoin('authors', 'authors.id', '=', 'posts.author_id');
     }
 
