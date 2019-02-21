@@ -38,7 +38,7 @@ abstract class BaseSearchQuery extends BaseGridQuery
      */
     protected function searchableQuery()
     {
-        return $this->makeQuery();
+        return $this->query();
     }
 
     /**
@@ -55,6 +55,39 @@ abstract class BaseSearchQuery extends BaseGridQuery
             method_exists($this, 'sortColumns') ? $this->sortColumns() : $this->columns(),
             $this->searchOperator
         );
+    }
+
+    /**
+     * Return the query for search.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function query()
+    {
+        return $this->query;
+    }
+
+    /**
+     * Get the keys of columns to be used in the query result.
+     *
+     * @return array
+     */
+    public function columnKeys()
+    {
+        $columnKeys = [];
+
+        foreach ($this->columns() as $key => $column) {
+            if (is_string($key)) {
+                $columnKeys[] = $key;
+            } elseif (str_contains($column, '.')) {
+                list($table, $columnKey) = explode('.', $column);
+                $columnKeys[]            = $columnKey;
+            } else {
+                $columnKeys[] = $column;
+            }
+        }
+
+        return $columnKeys;
     }
 
     /**

@@ -9,11 +9,13 @@ use SedpMis\BaseGridQuery\BaseGridQuery;
 
 class PostGridQuery extends BaseGridQuery
 {
-    public function initQuery() {
+    public function initQuery()
+    {
         return Post::leftJoin('authors', 'authors.id', '=', 'posts.author_id');
     }
 
-    public function columns() {
+    public function columns()
+    {
         return [
             'posts.title', // same with 'title' => 'posts.title'
             'text' => 'posts.body', // automatic alias of posts.body to text
@@ -39,11 +41,13 @@ use SedpMis\BaseGridQuery\BaseSearchQuery;
 
 class PostSearch extends BaseSearchQuery
 {
-    public function initQuery() {
-        return Post::leftJoin('authors', 'authors.id', '=', 'posts.author_id');
+    public function query()
+    {
+        return $this->query->leftJoin('authors', 'authors.id', '=', 'posts.author_id');
     }
 
-    public function columns() {
+    public function columns()
+    {
         return [
             'posts.title', // same with 'title' => 'posts.title'
             'text' => 'posts.body', // automatic alias of posts.body to text
@@ -76,14 +80,14 @@ $results = [
 ```php
 use SedpMis\BaseGridQuery\SearchableModel;
 
-class Post extends Model 
+class Post extends Model
 {
     use SearchableModel;
-    
+
     /**
-     * Searchable columns of the model. 
+     * Searchable columns of the model.
      * If this is empty it will default to all table columns.
-     */ 
+     */
     protected $searchableColumns = [
         'title',
         'body',
@@ -93,8 +97,8 @@ class Post extends Model
 // Usage
 // Call search anywhere
 // This only search the columns available to the table of the model.
-Post::search('Some post')->paginate(); 
-Post::where('likes', '>', 100)->search('Some post')->paginate(); 
+Post::search('Some post')->paginate();
+Post::where('likes', '>', 100)->search('Some post')->paginate();
 // If there are joins like if you want to include author's name use a custom search query.
 ```
 
@@ -104,9 +108,9 @@ We can use the above example `PostSearch`.
 We can use it as the default search query for the model like:
 
 ```php
-class Post 
+class Post
 {
-    public function searchQuery() 
+    public function searchQuery()
     {
         return new PostSearch;
     }
@@ -127,11 +131,11 @@ Post::search('William Shakespeare', new PostSearch)->paginate();
 
 ### Using derived columns for order by and where conditions
 
-Usually we have queries that has a derived columns like our example for `PostSearch`'s `author_full_name`. 
+Usually we have queries that has a derived columns like our example for `PostSearch`'s `author_full_name`.
 Sometimes we need to sort our query results by this column.
 
 ```php
 Post::search('Some search')->orderBy(Post::searchQuery()->author_full_name, 'desc')->paginate();
-// This is equivalent to 
+// This is equivalent to
 Post::search('Some search')->orderBy('CONCAT(authrors.first_name, ' ', authors.last_name)', 'desc')->paginate();
 ```

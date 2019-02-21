@@ -162,29 +162,6 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Get the keys of columns to be used in the query result.
-     *
-     * @return array
-     */
-    public function columnKeys()
-    {
-        $columnKeys = [];
-
-        foreach ($this->columns() as $key => $column) {
-            if (is_string($key)) {
-                $columnKeys[] = $key;
-            } elseif (str_contains($column, '.')) {
-                list($table, $columnKey) = explode('.', $column);
-                $columnKeys[]            = $columnKey;
-            } else {
-                $columnKeys[] = $column;
-            }
-        }
-
-        return $columnKeys;
-    }
-
-    /**
      * Columns declaration of the report grid.
      *
      * @return array

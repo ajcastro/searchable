@@ -84,6 +84,19 @@ class SublimeSearch
     }
 
     /**
+     * Set the query.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return  $this
+     */
+    public function setQuery($query)
+    {
+        $this->query = $query;
+
+        return $this;
+    }
+
+    /**
      * Get the actual searchable column of the given column key.
      *
      * @param  string $columnKey

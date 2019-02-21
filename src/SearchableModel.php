@@ -48,8 +48,8 @@ trait SearchableModel
      */
     public function scopeSearch($query, $search, $searchQuery = null)
     {
-        $searchQuery = $searchQuery ?: static::searchQuery();
+        $searchQuery = $searchQuery ?: static::searchQuery($query);
 
-        return $searchQuery->search($search)->select([(new static)->getTable().'.*']);
+        return $searchQuery->setQuery($query)->search($search)->select($this->getTable().'.*');
     }
 }
