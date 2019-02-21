@@ -93,16 +93,17 @@ class Post extends Model
 // Usage
 // Call search anywhere
 // This only search the columns available to the table of the model.
-// If there are joins like if you want to include author's name use a custom search query which will be discussed next.
 Post::search('Some post')->paginate(); 
 Post::where('likes', '>', 100)->search('Some post')->paginate(); 
+// If there are joins like if you want to include author's name use a custom search query.
 ```
 
 ### Searchable Model Custom Search Query
 
 We can use the above example `PostSearch`.
 We can use it as the default search query for the model like:
-```
+
+```php
 class Post 
 {
     public function searchQuery() 
@@ -119,7 +120,8 @@ Post::with('authror')->search('William Shakespeare')->paginate();
 ```
 
 We can also use custom search query temporarily by passing it as second parameter in `search()` method.
-```
+
+```php
 Post::search('William Shakespeare', new PostSearch)->paginate();
 ```
 
@@ -128,7 +130,7 @@ Post::search('William Shakespeare', new PostSearch)->paginate();
 Usually we have queries that has a derived columns like our example for `PostSearch`'s `author_full_name`. 
 Sometimes we need to sort our query results by this column.
 
-```
+```php
 Post::search('Some search')->orderBy(Post::searchQuery()->author_full_name, 'desc')->paginate();
 // This is equivalent to 
 Post::search('Some search')->orderBy('CONCAT(authrors.first_name, ' ', authors.last_name)', 'desc')->paginate();
