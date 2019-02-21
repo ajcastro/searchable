@@ -34,7 +34,13 @@ trait SearchableModel
      */
     public static function searchQuery()
     {
-        return new SublimeSearch($model = new static, $model->searchableColumns(), true, [], 'where');
+        $model = new static;
+
+        if (method_exists($model, 'defaultSearchQuery')) {
+            return $model->defaultSearchQuery();
+        }
+
+        return new SublimeSearch($model, $model->searchableColumns(), true, [], 'where');
     }
 
     /**

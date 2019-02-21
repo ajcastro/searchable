@@ -115,7 +115,7 @@ We can use it as the default search query for the model like:
 ```php
 class Post
 {
-    public function searchQuery()
+    public function defaultSearchQuery()
     {
         return new PostSearch;
     }
