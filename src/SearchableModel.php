@@ -2,47 +2,54 @@
 
 namespace SedpMis\BaseGridQuery;
 
-use SedpMis\BaseGridQuery\Search\SublimeSearch;
 use Illuminate\Support\Facades\Schema;
+use SedpMis\BaseGridQuery\Search\SublimeSearch;
 
-/**
- * Deprecated. Use SublimeSearch instead.
- */
-class SearchableModel extends BaseGridQuery
+trait SearchableModel
 {
-    protected $model;
+    protected static $allSearchableColumns = [];
 
-    protected $searchableColumns;
-
-    public function __construct($model, $query = null, $searchableColumns = ['*'])
+    /**
+     * Return the searchable columns for this model's table.
+     *
+     * @return array
+     */
+    public function searchableColumns()
     {
-        $this->model             = $model;
-        $this->query             = $query ?: $model;
-        $this->searchableColumns = $this->getSearchableColumns($model, $searchableColumns);
-    }
-
-    public function getSearchableColumns($model, $searchableColumns)
-    {
-        if (is_null($searchableColumns) || $searchableColumns == ['*']) {
-            return Schema::getColumnListing($model->getTable());
+        if (property_exists($this, 'searchableColumns')) {
+            return $this->searchableColumns;
         }
 
-        return $searchableColumns;
+        if (!array_key_exists($table = $this->getTable(), static::$allSearchableColumns)) {
+            static::$allSearchableColumns[$table] = Schema::getColumnListing($table);
+        }
+
+        return static::$allSearchableColumns[$table];
     }
 
-    public function searcher()
+    /**
+     * Return the search query.
+     *
+     * @return mixed|\SedpMis\BaseGridQuery\Search\SublimeSearch
+     */
+    public function searchQuery()
     {
-        return new SublimeSearch(
-            $this->makeQuery(),
-            $this->columnKeys(),
-            true,
-            method_exists($this, 'sortColumns') ? $this->sortColumns() : $this->columns(),
-            'having'
-        );
+        return new SublimeSearch($this, $this->searchableColumns(), true, [], 'where');
     }
 
-    public function columns()
+    /**
+     * Apply search in the query.
+     *
+     * @param  query $query
+     * @param  string $search
+     * @param  \SedpMis\BaseGridQuery\BaseSearchQuery $searchQuery
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSearch($query, $search, $searchQuery = null)
     {
-        return $this->searchableColumns;
+        $searchQuery = $searchQuery ?: (new static)->searchQuery();
+
+        return $searchQuery->search($search)->select([(new static)->getTable().'.*']);
     }
 }

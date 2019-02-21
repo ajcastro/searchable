@@ -16,43 +16,6 @@ abstract class BaseGridQuery
     protected $query;
 
     /**
-     * If the grid query is auto paginated. Useful for paginated rest-api.
-     *
-     * @var bool
-     */
-    protected $paginated = false;
-
-    /**
-     * Default number of items per page.
-     *
-     * @var int
-     */
-    protected $perPage = 15;
-
-    /**
-     * Initial page.
-     *
-     * @var int
-     */
-    protected $page = 1;
-
-    /**
-     * Search operator.
-     * Whether to use where or having in query to compare columns against search string.
-     * Values: where, having.
-     *
-     * @var string
-     */
-    protected $searchOperator = 'having';
-
-    /**
-     * If searching will be sorted by sort_index.
-     *
-     * @var bool
-     */
-    protected $sortSearch = true;
-
-    /**
      * Return the initialized specific query. This contains the joins logic and condition that make the query specific.
      *
      * @return \Illuminate\Database\Eloquent\Builder
@@ -72,66 +35,6 @@ abstract class BaseGridQuery
         $query = $this->query()->select($this->makeSelect($this->columns()));
 
         return $query;
-    }
-
-    /**
-     * Set if auto-paginated.
-     *
-     * @param  bool $paginated
-     * @return $this
-     */
-    public function paginated($paginated = true)
-    {
-        $this->paginated = $paginated;
-
-        return $this;
-    }
-
-    /**
-     * Set per page and page parameters.
-     *
-     * @param  int  $perPage
-     * @param  int $page
-     * @return $this
-     */
-    public function paginate($perPage = null, $page = 1)
-    {
-        $this->paginated(true);
-
-        $this->perPage = $perPage ?: $this->perPage;
-        $this->page    = $page;
-
-        return $this;
-    }
-
-    /**
-     * Return the number of per page items.
-     *
-     * @return int
-     */
-    public function perPage()
-    {
-        return Request::get('per_page', $this->perPage);
-    }
-
-    /**
-     * Return the current page.
-     *
-     * @return int
-     */
-    public function page()
-    {
-        return Request::get('page', $this->page);
-    }
-
-    /**
-     * Return a page limitter returning limit and offset base from page and per_page parameters.
-     *
-     * @return mixed
-     */
-    public function pageLimitter()
-    {
-        return new PageLimitOffset($this->perPage(), $this->page());
     }
 
     /**
@@ -171,14 +74,14 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Set the created columns of the reportGrid to the query.
+     * Set the columns of this gridQuery instance of the grid to the given query's select clause.
      *
      * @param  \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function setSelectQuery($query)
     {
-        return $query->select($this->makeSelect($this->columns));
+        return $query->select($this->makeSelect($this->columns()));
     }
 
     /**
@@ -244,76 +147,6 @@ abstract class BaseGridQuery
         }
 
         call_user_func_array([$this->query, $method], $parameters);
-
-        return $this;
-    }
-
-    /**
-     * Apply a search query.
-     *
-     * @param  string $searchStr
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function search($searchStr)
-    {
-        return $this->searcher()->search($searchStr);
-    }
-
-    /**
-     * Prepare and return the searchable query.
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    protected function searchableQuery()
-    {
-        $query = $this->makeQuery();
-
-        if ($this->paginated) {
-            $query->limit($this->pageLimitter()->limit());
-            $query->offset($this->pageLimitter()->offset());
-        }
-
-        return $query;
-    }
-
-    /**
-     * Return a searcher, the search query logic and algorithm.
-     *
-     * @return mixed
-     */
-    public function searcher()
-    {
-        return new SublimeSearch(
-            $this->searchableQuery(),
-            $this->searchOperator === 'having' ? $this->columnKeys() : array_values($this->columns()),
-            $this->sortSearch,
-            method_exists($this, 'sortColumns') ? $this->sortColumns() : $this->columns(),
-            $this->searchOperator
-        );
-    }
-
-    /**
-     * Set search operator.
-     *
-     * @param  string $searchOperator
-     * @return $this
-     */
-    public function setSearchOperator($searchOperator)
-    {
-        $this->searchOperator = $searchOperator;
-
-        return $this;
-    }
-
-    /**
-     * Set sortSearch value.
-     *
-     * @param  bool $bool
-     * @return $this
-     */
-    public function sortSearch($sortSearch = true)
-    {
-        $this->sortSearch = $sortSearch;
 
         return $this;
     }
