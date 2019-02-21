@@ -32,9 +32,9 @@ trait SearchableModel
      *
      * @return mixed|\SedpMis\BaseGridQuery\Search\SublimeSearch
      */
-    public function searchQuery()
+    public static function searchQuery()
     {
-        return new SublimeSearch($this, $this->searchableColumns(), true, [], 'where');
+        return new SublimeSearch($model = new static, $model->searchableColumns(), true, [], 'where');
     }
 
     /**
@@ -48,7 +48,7 @@ trait SearchableModel
      */
     public function scopeSearch($query, $search, $searchQuery = null)
     {
-        $searchQuery = $searchQuery ?: (new static)->searchQuery();
+        $searchQuery = $searchQuery ?: static::searchQuery();
 
         return $searchQuery->search($search)->select([(new static)->getTable().'.*']);
     }
