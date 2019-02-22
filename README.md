@@ -1,7 +1,10 @@
 # SEDP-MIS | BaseGridQuery
 
 Full-text search and reusable queries in laravel.
-Currently supports MySQL only.
+
+- Currently supports MySQL only.
+- Helpful for complex table queries with multiple joins and derived columns.
+- Reusable queries and column definitions.
 
 ## Overview
 
@@ -48,7 +51,7 @@ Our api call may look like this:
 http://awesome-app.com/api/posts?per_page=10&page=1&sort_by=title&descending=true&search=SomePostTitle
 `
 
-Your code can look like this
+Your code can look like this:
 
 ```php
 class PostsController
@@ -68,89 +71,7 @@ class PostsController
 }
 ```
 
-
-
 ## Documentation
-
-### Grid Query Declarative Definition
-
-- Helpful for complex table queries with multiple joins and derived columns.
-- Reusable queries and column definitions.
-
-```php
-use SedpMis\BaseGridQuery\BaseGridQuery;
-
-class PostGridQuery extends BaseGridQuery
-{
-    public function initQuery()
-    {
-        return Post::leftJoin('authors', 'authors.id', '=', 'posts.author_id');
-    }
-
-    public function columns()
-    {
-        return [
-            'posts.title', // same with 'title' => 'posts.title'
-            'text' => 'posts.body', // key `text` becomes alias of `posts`.`body` ==> posts.body as text
-            'author_full_name' => 'CONCAT(authors.first_name, " ", authors.last_name)'
-        ];
-    }
-}
-```
-
-Reusable column definitions
-
-```php
-$gridQuery = new PostGridQuery;
-$actualColumn = $gridQuery->getColumn('author_full_name');
-$actualColumn = $gridQuery->author_full_name; // or using magic getters
-$gridQuery->orderBy($actualColumn, 'desc');
-```
-
-### Search Query Declarative Definition
-
-```php
-use SedpMis\BaseGridQuery\BaseSearchQuery;
-
-class PostSearch extends BaseSearchQuery
-{
-    public function query()
-    {
-        // $this->query is available since this is set on SearchableModel trait scopeSearch() method
-        // If you're going to run this searchQuery on its own and not via scopeSearch()
-        // you should consider to initialize $this->query first or use initQuery() method instead of query()
-        // just like the above example
-        return $this->query->leftJoin('authors', 'authors.id', '=', 'posts.author_id');
-    }
-
-    public function columns()
-    {
-        return [
-            'posts.title', // same with 'title' => 'posts.title'
-            'text' => 'posts.body', // automatic alias of posts.body to text
-            'author_full_name' => 'CONCAT(authors.first_name, " ", authors.last_name)'
-        ];
-    }
-}
-
-// Usage
-// All defined columns are searchable in the query
-$searchQuery = new PostSearch;
-$searchQuery->search('This is a post title.');
-$searchQuery->search('This is a post body.');
-$searchQuery->search('William Shakespeare');
-// You can chain laravel query builder's paginate() or get() afterwards
-$results = $searchQuery->search('William Shakespeare')->get();
-// Will output
-$results = [
-    [
-        'title' => 'This is a post title',
-        'text' => 'This is a post body.',
-        'author_full_name' => 'William Shakespeare'
-    ],
-    // ... and so on
-];
-```
 
 ### Searchable Model
 
@@ -208,8 +129,44 @@ Post::where('likes', '>', 100)->search('Some post')->paginate();
 
 ### Searchable Model Custom Search Query
 
-We can use the above example `PostSearch`.
-We can use it as the default search query for the model like:
+Sometimes our queries have lots of things and constraints to do and we can contain it in a search query class like this `PostSearch`.
+
+```php
+use SedpMis\BaseGridQuery\BaseSearchQuery;
+
+class PostSearch extends BaseSearchQuery
+{
+    public function query()
+    {
+        // The query conditions here is always applied to our search.
+        return $this->query
+        ->leftJoin('authors', 'authors.id', '=', 'posts.author_id')
+        ->where('posts.likes', '>', 100)
+        ->where('is_active', 1)
+        ->orderBy('some_column')
+        // We can even access our column definition here that will result to the equivalent actual column
+        // CAUTION:
+        // MySQL functions need to be wrapped with DB::raw() to be parsed properly.
+        // Also we can use orderByRaw() for this example.
+        // Also consider wrapping it in the columns() method so it will be ready
+        // everytime we use it in orderBy() or where() methods.
+        ->orderBy($this->author_full_name);
+    }
+
+    public function columns()
+    {
+        return [
+            'posts.title',
+            'posts.body',
+            // We wrap CONCAT() column so it will always be ready to be used in orderBy() and where() methods
+            'author_full_name' => DB::raw('CONCAT(authors.first_name, " ", authors.last_name)')
+        ];
+    }
+}
+
+```
+
+Then, we can use it as the default search query for the model like:
 
 ```php
 class Post
@@ -221,10 +178,7 @@ class Post
 }
 
 // Usage
-Post::search("We can now search for author's full_name like William Shakespeare")->paginate();
-// This will return the models normal structure unlike if you're using the PostSearch which returns only the selected columns.
-// We can do everything as usual like using with() to load relations
-Post::with('author')->search('William Shakespeare')->paginate();
+Post::search($searchStr)->paginate();
 ```
 
 We can also use custom search query temporarily by passing it as second parameter in `search()` method.
@@ -239,8 +193,111 @@ Usually we have queries that has a derived columns like our example for `PostSea
 Sometimes we need to sort our query results by this column.
 
 ```php
+// CAUTION:
+// Remember to wrap column with MySQL functions with DB::raw() in column definition
 Post::search('Some search')->orderBy(Post::searchQuery()->author_full_name, 'desc')->paginate();
-// This is equivalent to
-Post::search('Some search')->orderBy('CONCAT(authrors.first_name, ' ', authors.last_name)', 'desc')->paginate();
+Post::search('Some search')->where(Post::searchQuery()->author_full_name, 'William%')->paginate();
 ```
 
+### Running gridQuery and searchQuery on its own
+
+You can run gridQuery and searchQuery on its own but you need to make sure you initiliaze your query.
+
+```php
+use SedpMis\BaseGridQuery\BaseSearchQuery;
+
+class PostSearch extends BaseSearchQuery
+{
+    public function query()
+    {
+        // Initialize query when $this->query is not available.
+        $query = $this->query ?? Post::query();
+        return $this->query;
+        // ->leftJoin('authors', 'authors.id', '=', 'posts.author_id')
+        // -> ... and so on
+    }
+}
+
+// Then you can run it...
+(new PostSearch)->search('something')->paginate();
+```
+
+### Grid Query Declarative Definition
+
+```php
+use SedpMis\BaseGridQuery\BaseGridQuery;
+
+class PostGridQuery extends BaseGridQuery
+{
+    public function initQuery()
+    {
+        return Post::leftJoin('authors', 'authors.id', '=', 'posts.author_id');
+    }
+
+    public function columns()
+    {
+        return [
+            'posts.title', // same with 'title' => 'posts.title'
+            'text' => 'posts.body', // will result to "posts.body as text"
+            'author_full_name' => 'CONCAT(authors.first_name, " ", authors.last_name)'
+        ];
+    }
+}
+```
+
+```php
+$gridQuery = new PostGridQuery;
+$actualColumn = $gridQuery->getColumn('author_full_name');
+$actualColumn = $gridQuery->author_full_name; // or using magic getters
+$gridQuery
+    ->selectColumns() // puts columns() to $query->select() and return the laravel query builder
+    ->orderBy($actualColumn, 'desc')
+    ->get();
+```
+
+### Search Query Declarative Definition
+
+```php
+use SedpMis\BaseGridQuery\BaseSearchQuery;
+
+class PostSearch extends BaseSearchQuery
+{
+    public function query()
+    {
+        // $this->query is available since this is set on SearchableModel trait scopeSearch() method
+        // If you're going to run this searchQuery on its own and not via scopeSearch()
+        // you should consider to initialize $this->query first or use initQuery() method instead of query()
+        // just like the above example
+        return $this->query->leftJoin('authors', 'authors.id', '=', 'posts.author_id');
+    }
+
+    public function columns()
+    {
+        return [
+            'posts.title', // same with 'title' => 'posts.title'
+            'text' => 'posts.body', // will result to "posts.body as text"
+            'author_full_name' => 'CONCAT(authors.first_name, " ", authors.last_name)'
+        ];
+    }
+}
+```
+
+```php
+// All defined columns are searchable in the query
+$searchQuery = new PostSearch;
+$searchQuery->search('This is a post title.');
+$searchQuery->search('This is a post body.');
+$searchQuery->search('William Shakespeare');
+// You can chain laravel query builder's paginate() or get() afterwards
+$searchQuery->search('William Shakespeare')->get();
+// If you want to select the columns from the columns() we call selectColumns(), use initQuery for this
+$results = tap($searchQuery)->search('William Shakespeare')->selectColumns()->get();
+$results = [
+    [
+        'title' => 'This is a post title',
+        'text' => 'This is a post body.',
+        'author_full_name' => 'William Shakespeare'
+    ],
+    // ... and so on
+];
+```
