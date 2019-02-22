@@ -26,7 +26,7 @@ abstract class BaseSearchQuery extends BaseGridQuery
     protected $searchStr;
 
     /**
-     * Return the query for search.
+     * Return the query for the search.
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
@@ -65,9 +65,8 @@ abstract class BaseSearchQuery extends BaseGridQuery
     {
         return new SublimeSearch(
             $this->searchableQuery(),
-            $this->searchOperator === 'having' ? $this->columnKeys() : array_values($this->columns()),
+            $this->columns(),
             $this->sort,
-            $this->sortColumns(),
             $this->searchOperator
         );
     }
@@ -77,32 +76,9 @@ abstract class BaseSearchQuery extends BaseGridQuery
      *
      * @return array
      */
-    public function sortColumns()
+    protected function sortColumns()
     {
         return $this->columns();
-    }
-
-    /**
-     * Get the keys of columns to be used in the query result.
-     *
-     * @return array
-     */
-    public function columnKeys()
-    {
-        $columnKeys = [];
-
-        foreach ($this->columns() as $key => $column) {
-            if (is_string($key)) {
-                $columnKeys[] = $key;
-            } elseif (str_contains($column, '.')) {
-                list($table, $columnKey) = explode('.', $column);
-                $columnKeys[]            = $columnKey;
-            } else {
-                $columnKeys[] = $column;
-            }
-        }
-
-        return $columnKeys;
     }
 
     /**

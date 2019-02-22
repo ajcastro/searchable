@@ -3,25 +3,13 @@
 namespace SedpMis\BaseGridQuery\Search;
 
 use DB;
-use SedpMis\BaseGridQuery\SortTrait;
+use SedpMis\BaseGridQuery\BaseSearchQuery;
 
 /**
  * A search query resembling the behaviour in sublime file search (ctrl+p).
- *
- * Sample Usage:
- * (new SublimeSearch)->search()->sortByRelevance();
  */
-class SublimeSearch
+class SublimeSearch extends BaseSearchQuery
 {
-    use SortTrait;
-
-    /**
-     * Searchable columns.
-     *
-     * @var array
-     */
-    protected $searchable = [];
-
     /**
      * The query for the search.
      *
@@ -34,16 +22,7 @@ class SublimeSearch
      *
      * @var array
      */
-    protected $sortColumns = [];
-
-    /**
-     * Search operator.
-     * Whether to use where or having in query to compare columns against search string.
-     * Values: where, having.
-     *
-     * @var string
-     */
-    protected $searchOperator = 'having';
+    protected $columns = [];
 
     /**
      * Search string.
@@ -59,48 +38,14 @@ class SublimeSearch
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @param array $searchable
      * @param bool $sort
-     * @param array $sortColumns
+     * @param array $columns
      */
-    public function __construct($query, $searchable = [], $sort = true, $sortColumns = [], $searchOperator = 'having')
+    public function __construct($query, $columns = [], $sort = true, $searchOperator = 'where')
     {
         $this->query          = $query;
-        $this->searchable     = $searchable;
+        $this->columns        = $columns;
         $this->sort           = $sort;
-        $this->sortColumns    = $sortColumns;
         $this->searchOperator = $searchOperator;
-    }
-
-    /**
-     * Return searchable column names.
-     *
-     * @return array
-     */
-    public function searchable()
-    {
-        return $this->searchable;
-    }
-
-    /**
-     * Return the query for the search.
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function query()
-    {
-        return $this->query;
-    }
-
-    /**
-     * Set the query.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return  $this
-     */
-    public function setQuery($query)
-    {
-        $this->query = $query;
-
-        return $this;
     }
 
     /**
@@ -136,6 +81,39 @@ class SublimeSearch
     }
 
     /**
+     * Return the searchable columns, actual columns for `where` operator and alias column names for `having` operator.
+     *
+     * @return array
+     */
+    public function searchable()
+    {
+        return $this->searchOperator === 'having' ? $this->columnKeys() : array_values($this->columns());
+    }
+
+    /**
+     * Get the keys of columns to be used in the query result.
+     *
+     * @return array
+     */
+    public function columnKeys()
+    {
+        $columnKeys = [];
+
+        foreach ($this->columns() as $key => $column) {
+            if (is_string($key)) {
+                $columnKeys[] = $key;
+            } elseif (str_contains($column, '.')) {
+                list($table, $columnKey) = explode('.', $column);
+                $columnKeys[]            = $columnKey;
+            } else {
+                $columnKeys[] = $column;
+            }
+        }
+
+        return $columnKeys;
+    }
+
+    /**
      * Apply search query.
      *
      * @param  string|mixed  $searchStr
@@ -158,18 +136,6 @@ class SublimeSearch
     }
 
     /**
-     * Set searchable columns.
-     *
-     * @param array $searchable
-     */
-    public function setSearchable($searchable = [])
-    {
-        $this->searchable = $searchable;
-
-        return $this;
-    }
-
-    /**
      * Parse string to search.
      *
      * @param  string|mixed $searchStr
@@ -187,8 +153,8 @@ class SublimeSearch
      *
      * @return array
      */
-    public function sortColumns()
+    protected function columns()
     {
-        return $this->sortColumns;
+        return $this->columns;
     }
 }

@@ -2,6 +2,8 @@
 
 namespace SedpMis\BaseGridQuery;
 
+use Illuminate\Support\Facades\DB;
+
 class SortByRelevance
 {
     public static function sort($query, $sortColumns, $searchStr)
