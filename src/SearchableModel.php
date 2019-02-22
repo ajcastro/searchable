@@ -89,9 +89,11 @@ trait SearchableModel
      */
     public function scopeSearch($query, $search, $searchQuery = null)
     {
-        $searchQuery = $searchQuery ?: static::searchQuery();
+        if (is_null($searchQuery)) {
+            $this->applySearchableJoins($query);
+        }
 
-        $this->applySearchableJoins($query);
+        $searchQuery = $searchQuery ?: static::searchQuery();
 
         $searchQuery->setQuery($query)->search($search)->select($this->getTable().'.*');
 
