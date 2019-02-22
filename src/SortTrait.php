@@ -10,7 +10,7 @@ trait SortTrait
      *
      * @var bool
      */
-    protected $sort = false;
+    protected $sort = true;
 
     /**
      * Set sort value.
