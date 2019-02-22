@@ -93,7 +93,7 @@ class Post extends Model
 
     /**
      * Searchable columns of the model.
-     * If this is empty it will default to all table columns.
+     * If this is not defined it will default to all table columns.
      */
     protected $searchableColumns = [
         'title',
@@ -106,7 +106,7 @@ class Post extends Model
 // This only search the columns available to the table of the model.
 Post::search('Some post')->paginate();
 Post::where('likes', '>', 100)->search('Some post')->paginate();
-// If there are joins like if you want to include author's name use a custom search query.
+// If there are joins like if you want to include author's full_name use a custom search query.
 ```
 
 ### Searchable Model Custom Search Query
