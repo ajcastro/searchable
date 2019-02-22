@@ -40,7 +40,7 @@ trait SearchableModel
             return $model->defaultSearchQuery();
         }
 
-        return new SublimeSearch($model, $model->searchableColumns(), true, [], 'where');
+        return new SublimeSearch($model, $model->searchableColumns(), true, 'where');
     }
 
     /**
