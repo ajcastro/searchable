@@ -26,16 +26,6 @@ abstract class BaseSearchQuery extends BaseGridQuery
     protected $searchStr;
 
     /**
-     * Return the query for the search.
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function query()
-    {
-        return $this->query;
-    }
-
-    /**
      * Prepare and return the searchable query.
      *
      * @return \Illuminate\Database\Eloquent\Builder

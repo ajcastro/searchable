@@ -11,13 +11,6 @@ use SedpMis\BaseGridQuery\BaseSearchQuery;
 class SublimeSearch extends BaseSearchQuery
 {
     /**
-     * The query for the search.
-     *
-     * @var \Illuminate\Database\Eloquent\Builder
-     */
-    protected $query;
-
-    /**
      * Columns for sorting query.
      *
      * @var array
@@ -67,17 +60,6 @@ class SublimeSearch extends BaseSearchQuery
                 return $column;
             }
         }
-    }
-
-    /**
-     * Getter for searchable column.
-     *
-     * @param  string $columnKey
-     * @return string|mixed
-     */
-    public function __get($columnKey)
-    {
-        return $this->getColumn($columnKey);
     }
 
     /**

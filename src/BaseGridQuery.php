@@ -21,24 +21,34 @@ abstract class BaseGridQuery
      */
     public function query()
     {
-        return $this->query ?: $this->initQuery();
+        return $this->query ?? $this->query = $this->initQuery();
     }
 
     /**
-     * Return the final query base from the query() method with its select statement from the columns() method.
+     * Return the final query of this gridQuery.
+     * By default context, we can call selectColumns() to return the query with its selected columns
+     * to treat them as the final query.
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function makeQuery()
     {
-        $query = $this->query()->select($this->makeSelect($this->columns()));
-
-        return $query;
+        return $this->selectColumns();
     }
 
     /**
-     * Create an array of select parameters from the columns declaration,
-     * transforming string indexed element to have an alias "as".
+     * Return the query from the query() method with its select statement from the columns() method.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function selectColumns()
+    {
+        return $this->query()->select($this->makeSelect($this->columns()));
+    }
+
+    /**
+     * Create an array of select parameters that can be passed in $query->select().
+     * String indexed columns will be transformed to have an alias like "column_key as as actual_column".
      *
      * @param  array|null $columns
      * @return array
