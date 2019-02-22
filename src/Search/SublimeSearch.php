@@ -87,7 +87,7 @@ class SublimeSearch extends BaseSearchQuery
      */
     public function searchable()
     {
-        return $this->searchOperator === 'having' ? $this->columnKeys() : array_values($this->columns());
+        return $this->searchOperator === 'having' ? $this->columnKeys() : $this->columns();
     }
 
     /**
