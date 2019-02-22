@@ -17,5 +17,8 @@
             "SedpMis\\BaseGridQuery\\": "src"
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "require-dev": {
+        "orchestra/testbench": "~3.0"
+    }
 }
