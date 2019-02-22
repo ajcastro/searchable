@@ -1,5 +1,7 @@
 ## SEDP-MIS | BaseGridQuery
 
+Full-text search and re-usable queries in laravel.
+
 ### Grid Query Declarative Definition
 
 - Helpful for complex table queries with multiple joins and derived columns.
@@ -143,4 +145,35 @@ Sometimes we need to sort our query results by this column.
 Post::search('Some search')->orderBy(Post::searchQuery()->author_full_name, 'desc')->paginate();
 // This is equivalent to
 Post::search('Some search')->orderBy('CONCAT(authrors.first_name, ' ', authors.last_name)', 'desc')->paginate();
+```
+
+
+### Bonus Code
+
+Imagine we have an api for a table or list that has full-text searching and column sorting and pagination.
+This is a usual setup for a table or list.
+Our api call may look like this:
+
+`
+http://awesome-app.com/api/posts?per_page=10&page=1&sort_by=title&descending=true&search=SomePostTitle
+`
+
+Your code can look like this
+
+```php
+class PostsController
+{
+    public function index()
+    {
+        retur Post::search(request('search'))
+            ->when($sortColumn = request('sort_by'), function ($query) use ($sortColumn) {
+                $query->orderBy(
+                    \DB::raw($this->model->searchQuery()->getColumn($sortColumn) ?? $sortColumn),
+                    request()->bool('descending') ? 'desc' : 'asc'
+                );
+            })
+            ->paginate();
+    }
+
+}
 ```
