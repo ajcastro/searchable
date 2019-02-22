@@ -1,12 +1,81 @@
-## SEDP-MIS | BaseGridQuery
+# SEDP-MIS | BaseGridQuery
 
-Full-text search and re-usable queries in laravel.
+Full-text search and reusable queries in laravel.
 Currently supports MySQL only.
+
+## Overview
+
+### Full-text search on eloquent models
+
+Simple setup for searchable model and can search on derived columns.
+
+```php
+use SedpMis\BaseGridQuery\SearchableModel;
+
+class Post
+{
+    use SearchableModel;
+
+    protected $searchable = [
+        // This will search on the defined searchable columns
+        'columns' => [
+            'posts.title',
+            'posts.body',
+            'author_full_name' => 'CONCAT(authors.first_name, " ", authors.last_name)'
+        ],
+        'joins' => [
+            'authors' => ['authors.id', 'posts.author_id']
+        ]
+    ];
+
+    public function author()
+    {
+        return $this->belongsTo(Author::class);
+    }
+}
+
+// Usage
+Post::search("Some title or body content or even the author's full name")
+    ->with('author')
+    ->paginate();
+```
+
+Imagine we have an api for a table or list that has full-text searching and column sorting and pagination.
+This is a usual setup for a table or list. The internal explanations will be available on the documentation below.
+Our api call may look like this:
+
+`
+http://awesome-app.com/api/posts?per_page=10&page=1&sort_by=title&descending=true&search=SomePostTitle
+`
+
+Your code can look like this
+
+```php
+class PostsController
+{
+    public function index()
+    {
+        return Post::search(request('search'))
+            ->when($sortColumn = request('sort_by'), function ($query) use ($sortColumn) {
+                $query->orderBy(
+                    \DB::raw($this->model->searchQuery()->getColumn($sortColumn) ?? $sortColumn),
+                    request()->bool('descending') ? 'desc' : 'asc'
+                );
+            })
+            ->paginate();
+    }
+
+}
+```
+
+
+
+## Documentation
 
 ### Grid Query Declarative Definition
 
 - Helpful for complex table queries with multiple joins and derived columns.
-- Re-usable queries and column definitions.
+- Reusable queries and column definitions.
 
 ```php
 use SedpMis\BaseGridQuery\BaseGridQuery;
@@ -22,14 +91,14 @@ class PostGridQuery extends BaseGridQuery
     {
         return [
             'posts.title', // same with 'title' => 'posts.title'
-            'text' => 'posts.body', // automatic alias of posts.body to text
-            'author_full_name' => 'CONCAT(authors.first_name, ' ', authors.last_name)'
+            'text' => 'posts.body', // key `text` becomes alias of `posts`.`body` ==> posts.body as text
+            'author_full_name' => 'CONCAT(authors.first_name, " ", authors.last_name)'
         ];
     }
 }
 ```
 
-Re-usable column definitions
+Reusable column definitions
 
 ```php
 $gridQuery = new PostGridQuery;
@@ -59,7 +128,7 @@ class PostSearch extends BaseSearchQuery
         return [
             'posts.title', // same with 'title' => 'posts.title'
             'text' => 'posts.body', // automatic alias of posts.body to text
-            'author_full_name' => 'CONCAT(authors.first_name, ' ', authors.last_name)'
+            'author_full_name' => 'CONCAT(authors.first_name, " ", authors.last_name)'
         ];
     }
 }
@@ -93,21 +162,48 @@ class Post extends Model
     use SearchableModel;
 
     /**
-     * Searchable columns of the model.
-     * If this is not defined it will default to all table columns.
+     * Searchable model definitions.
+     */
+     protected $searchable = [
+        // Searchable columns of the model.
+        // If this is not defined it will default to all table columns.
+        'columns' => [
+            'posts.title',
+            'posts.body',
+            'author_full_name' => 'CONCAT(authors.first_name, " ", authors.last_name)'
+        ],
+        // This is needed if there is a need to join other tables for derived columns.
+        'joins' => [
+            'authors' => ['authors.id', 'posts.author_id']
+        ]
+    ];
+
+    /**
+     * Can also be written like this for searchable columns.
+     *
+     * @var array
      */
     protected $searchableColumns = [
         'title',
         'body',
+        'author_full_name' => 'CONCAT(authors.first_name, " ", authors.last_name)'
+    ];
+
+    /**
+     * Can also be written like this for searchable joins.
+     *
+     * @var array
+     */
+    protected $searchableJoins = [
+        'authors' => ['authors.id', 'posts.author_id']
     ];
 }
 
 // Usage
 // Call search anywhere
-// This only search the columns available to the table of the model.
+// This only search on the defined columns.
 Post::search('Some post')->paginate();
 Post::where('likes', '>', 100)->search('Some post')->paginate();
-// If there are joins like if you want to include author's full_name use a custom search query.
 ```
 
 ### Searchable Model Custom Search Query
@@ -148,33 +244,3 @@ Post::search('Some search')->orderBy(Post::searchQuery()->author_full_name, 'des
 Post::search('Some search')->orderBy('CONCAT(authrors.first_name, ' ', authors.last_name)', 'desc')->paginate();
 ```
 
-
-### Bonus Code
-
-Imagine we have an api for a table or list that has full-text searching and column sorting and pagination.
-This is a usual setup for a table or list.
-Our api call may look like this:
-
-`
-http://awesome-app.com/api/posts?per_page=10&page=1&sort_by=title&descending=true&search=SomePostTitle
-`
-
-Your code can look like this
-
-```php
-class PostsController
-{
-    public function index()
-    {
-        return Post::search(request('search'))
-            ->when($sortColumn = request('sort_by'), function ($query) use ($sortColumn) {
-                $query->orderBy(
-                    \DB::raw($this->model->searchQuery()->getColumn($sortColumn) ?? $sortColumn),
-                    request()->bool('descending') ? 'desc' : 'asc'
-                );
-            })
-            ->paginate();
-    }
-
-}
-```
