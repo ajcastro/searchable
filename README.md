@@ -128,7 +128,7 @@ class Post
 Post::search("We can now search for author's full_name like William Shakespeare")->paginate();
 // This will return the models normal structure unlike if you're using the PostSearch which returns only the selected columns.
 // We can do everything as usual like using with() to load relations
-Post::with('authror')->search('William Shakespeare')->paginate();
+Post::with('author')->search('William Shakespeare')->paginate();
 ```
 
 We can also use custom search query temporarily by passing it as second parameter in `search()` method.
