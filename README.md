@@ -166,7 +166,7 @@ class PostsController
 {
     public function index()
     {
-        retur Post::search(request('search'))
+        return Post::search(request('search'))
             ->when($sortColumn = request('sort_by'), function ($query) use ($sortColumn) {
                 $query->orderBy(
                     \DB::raw($this->model->searchQuery()->getColumn($sortColumn) ?? $sortColumn),
