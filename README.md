@@ -1,6 +1,7 @@
 ## SEDP-MIS | BaseGridQuery
 
 Full-text search and re-usable queries in laravel.
+Currently supports MySQL only.
 
 ### Grid Query Declarative Definition
 
