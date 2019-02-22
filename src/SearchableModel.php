@@ -49,6 +49,12 @@ trait SearchableModel
         return [];
     }
 
+    /**
+     * Apply searchable joins for the search query.
+     *
+     * @param  $query
+     * @return void
+     */
     protected function applySearchableJoins($query)
     {
         foreach ($this->searchableJoins() as $table => $join) {
