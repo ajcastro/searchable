@@ -20,11 +20,40 @@ trait SearchableModel
             return $this->searchableColumns;
         }
 
+        if (property_exists($this, 'searchable') && array_key_exists('columns', $this->searchable)) {
+            return $this->searchable['columns'];
+        }
+
         if (!array_key_exists($table = $this->getTable(), static::$allSearchableColumns)) {
             static::$allSearchableColumns[$table] = Schema::getColumnListing($table);
         }
 
         return static::$allSearchableColumns[$table];
+    }
+
+    /**
+     * Return the searchable joins for the search query.
+     *
+     * @return array
+     */
+    public function searchableJoins()
+    {
+        if (property_exists($this, 'searchableJoins')) {
+            return $this->searchableJoins;
+        }
+
+        if (property_exists($this, 'searchable') && array_key_exists('joins', $this->searchable)) {
+            return $this->searchable['joins'];
+        }
+
+        return [];
+    }
+
+    protected function applySearchableJoins($query)
+    {
+        foreach ($this->searchableJoins() as $table => $join) {
+            $query->leftJoin($table, $join[0], '=', $join[1]);
+        }
     }
 
     /**
@@ -55,6 +84,8 @@ trait SearchableModel
     public function scopeSearch($query, $search, $searchQuery = null)
     {
         $searchQuery = $searchQuery ?: static::searchQuery();
+
+        $this->applySearchableJoins($query);
 
         $searchQuery->setQuery($query)->search($search)->select($this->getTable().'.*');
 
