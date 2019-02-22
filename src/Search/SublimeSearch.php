@@ -56,7 +56,7 @@ class SublimeSearch extends BaseSearchQuery
      */
     public function getColumn($columnKey)
     {
-        $columns = $this->searchable();
+        $columns = $this->columnsToCompare();
 
         if (array_key_exists($columnKey, $columns)) {
             return $columns[$columnKey];
@@ -81,11 +81,11 @@ class SublimeSearch extends BaseSearchQuery
     }
 
     /**
-     * Return the searchable columns, actual columns for `where` operator and alias column names for `having` operator.
+     * Return the searchable columns to compare, actual columns for `where` operator and alias column names for `having` operator.
      *
      * @return array
      */
-    public function searchable()
+    public function columnsToCompare()
     {
         return $this->searchOperator === 'having' ? $this->columnKeys() : $this->columns();
     }
@@ -125,7 +125,7 @@ class SublimeSearch extends BaseSearchQuery
 
         $parsedStr = $this->parseSearchStr($this->searchStr = $searchStr);
 
-        foreach ($this->searchable() as $column) {
+        foreach ($this->columnsToCompare() as $column) {
             $conditions[] = $column.' like "'.$parsedStr.'"';
         }
 
