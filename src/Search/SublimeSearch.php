@@ -153,7 +153,7 @@ class SublimeSearch extends BaseSearchQuery
      *
      * @return array
      */
-    protected function columns()
+    public function columns()
     {
         return $this->columns;
     }
