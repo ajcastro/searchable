@@ -3,12 +3,18 @@
 namespace SedpMis\BaseGridQuery\Search;
 
 use DB;
+use SedpMis\BaseGridQuery\SortTrait;
 
 /**
  * A search query resembling the behaviour in sublime file search (ctrl+p).
+ *
+ * Sample Usage:
+ * (new SublimeSearch)->search()->sortByRelevance();
  */
 class SublimeSearch
 {
+    use SortTrait;
+
     /**
      * Searchable columns.
      *
@@ -22,13 +28,6 @@ class SublimeSearch
      * @var \Illuminate\Database\Eloquent\Builder
      */
     protected $query;
-
-    /**
-     * If query should be sorted.
-     *
-     * @var bool
-     */
-    protected $sort = true;
 
     /**
      * Columns for sorting query.
@@ -45,6 +44,14 @@ class SublimeSearch
      * @var string
      */
     protected $searchOperator = 'having';
+
+    /**
+     * Search string.
+     * This is set everytime search() is called.
+     *
+     * @var string
+     */
+    protected $searchStr;
 
     /**
      * Construct.
@@ -138,7 +145,7 @@ class SublimeSearch
     {
         $conditions = [];
 
-        $parsedStr = $this->parseSearchStr($searchStr);
+        $parsedStr = $this->parseSearchStr($this->searchStr = $searchStr);
 
         foreach ($this->searchable() as $column) {
             $conditions[] = $column.' like "'.$parsedStr.'"';
@@ -146,10 +153,6 @@ class SublimeSearch
 
         $method = $this->searchOperator.'Raw';
         $query  = $this->query()->{$method}('('.join(' OR ', $conditions).')');
-
-        if ($this->sort) {
-            $this->applySort($query, $searchStr);
-        }
 
         return $query;
     }
@@ -162,19 +165,6 @@ class SublimeSearch
     public function setSearchable($searchable = [])
     {
         $this->searchable = $searchable;
-
-        return $this;
-    }
-
-    /**
-     * Set if query should be sorted.
-     *
-     * @param  bool $sort
-     * @return $this
-     */
-    public function sort($sort)
-    {
-        $this->sort = $sort;
 
         return $this;
     }
@@ -200,38 +190,5 @@ class SublimeSearch
     public function sortColumns()
     {
         return $this->sortColumns;
-    }
-
-    /**
-     * Apply sort in query. By default using mysql locate function.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $searchStr
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    protected function applySort($query, $searchStr)
-    {
-        if (empty($searchStr) || count($sortColumns = $this->sortColumns()) == 0) {
-            return $query;
-        }
-
-        $sortColumns = array_map(function ($column) {
-            return DB::raw("IFNULL(({$column}), '')");
-        }, $sortColumns);
-
-        $sqls              = [];
-        $concatSortColumns = 'CONCAT('.join(',', $sortColumns).')';
-
-        for ($i = 0, $j = strlen($searchStr); $i < $j; $i++) {
-            $character = $searchStr[$i];
-
-            $counter = $i + 1;
-            $sqls[]  = "LOCATE('".addslashes($character)."', {$concatSortColumns}, {$counter})";
-        }
-
-        $query->addSelect(DB::raw('('.implode('+', $sqls).') AS sort_index'));
-        $query->orderBy('sort_index', 'asc');
-
-        return $query;
     }
 }

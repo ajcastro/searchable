@@ -6,6 +6,8 @@ use SedpMis\BaseGridQuery\Search\SublimeSearch;
 
 abstract class BaseSearchQuery extends BaseGridQuery
 {
+    use SortTrait;
+
     /**
      * Search operator.
      * Whether to use where or having in query to compare columns against search string.
@@ -16,21 +18,21 @@ abstract class BaseSearchQuery extends BaseGridQuery
     protected $searchOperator = 'where';
 
     /**
-     * If searching will be sorted by sort_index.
+     * Search string.
+     * This is set everytime search() is called.
      *
-     * @var bool
+     * @var string
      */
-    protected $sortSearch = false;
+    protected $searchStr;
 
     /**
-     * Apply a search query.
+     * Return the query for search.
      *
-     * @param  string $searchStr
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function search($searchStr)
+    public function query()
     {
-        return $this->searcher()->search($searchStr);
+        return $this->query;
     }
 
     /**
@@ -44,6 +46,17 @@ abstract class BaseSearchQuery extends BaseGridQuery
     }
 
     /**
+     * Apply a search query.
+     *
+     * @param  string $searchStr
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function search($searchStr)
+    {
+        return $this->searcher()->search($this->searchStr = $searchStr);
+    }
+
+    /**
      * Return a searcher, the search query logic and algorithm.
      *
      * @return mixed
@@ -53,20 +66,20 @@ abstract class BaseSearchQuery extends BaseGridQuery
         return new SublimeSearch(
             $this->searchableQuery(),
             $this->searchOperator === 'having' ? $this->columnKeys() : array_values($this->columns()),
-            $this->sortSearch,
-            method_exists($this, 'sortColumns') ? $this->sortColumns() : $this->columns(),
+            $this->sort,
+            $this->sortColumns(),
             $this->searchOperator
         );
     }
 
     /**
-     * Return the query for search.
+     * Return the columns for sorting query.
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return array
      */
-    public function query()
+    public function sortColumns()
     {
-        return $this->query;
+        return $this->columns();
     }
 
     /**
@@ -104,18 +117,4 @@ abstract class BaseSearchQuery extends BaseGridQuery
 
         return $this;
     }
-
-    /**
-     * Set sortSearch value.
-     *
-     * @param  bool $bool
-     * @return $this
-     */
-    public function sortSearch($sortSearch = true)
-    {
-        $this->sortSearch = $sortSearch;
-
-        return $this;
-    }
-
 }
