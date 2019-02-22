@@ -4,7 +4,6 @@ namespace SedpMis\BaseGridQuery;
 
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\DB as DB;
-use SedpMis\BaseGridQuery\Search\SublimeSearch;
 
 abstract class BaseGridQuery
 {

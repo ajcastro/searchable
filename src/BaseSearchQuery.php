@@ -2,6 +2,8 @@
 
 namespace SedpMis\BaseGridQuery;
 
+use SedpMis\BaseGridQuery\Search\SublimeSearch;
+
 abstract class BaseSearchQuery extends BaseGridQuery
 {
     /**
