@@ -307,3 +307,8 @@ $results = [
     // ... and so on
 ];
 ```
+
+## Credits
+
+- Ray Anthony Madrona [@raymadrona](https://github.com/raymadrona), for the sort relevance using MySQL `LOCATE()`.
+- [nicolaslopezj/searchable](https://github.com/nicolaslopezj/searchable), for the `$searchable` property declaration style.
