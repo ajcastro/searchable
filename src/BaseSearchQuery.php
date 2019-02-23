@@ -1,8 +1,8 @@
 <?php
 
-namespace SedpMis\BaseGridQuery;
+namespace AjCastro\Searchable;
 
-use SedpMis\BaseGridQuery\Search\SublimeSearch;
+use AjCastro\Searchable\Search\SublimeSearch;
 
 abstract class BaseSearchQuery extends BaseGridQuery
 {

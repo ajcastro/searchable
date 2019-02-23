@@ -1,9 +1,9 @@
 <?php
 
-namespace SedpMis\BaseGridQuery;
+namespace AjCastro\Searchable;
 
 use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\DB as DB;
+use Illuminate\Support\Facades\DB;
 
 abstract class BaseGridQuery
 {

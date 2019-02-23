@@ -1,9 +1,9 @@
 <?php
 
-namespace SedpMis\BaseGridQuery\Search;
+namespace AjCastro\Searchable\Search;
 
-use DB;
-use SedpMis\BaseGridQuery\BaseSearchQuery;
+use Illuminate\Support\Facades\DB;
+use AjCastro\Searchable\BaseSearchQuery;
 
 /**
  * A search query resembling the behaviour in sublime file search (ctrl+p).

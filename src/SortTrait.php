@@ -1,6 +1,6 @@
 <?php
 
-namespace SedpMis\BaseGridQuery;
+namespace AjCastro\Searchable;
 
 trait SortTrait
 {

@@ -1,4 +1,4 @@
-# SEDP-MIS | BaseGridQuery
+# Searchable
 
 Full-text search and reusable queries in laravel.
 
@@ -13,11 +13,11 @@ Full-text search and reusable queries in laravel.
 Simple setup for searchable model and can search on derived columns.
 
 ```php
-use SedpMis\BaseGridQuery\SearchableModel;
+use AjCastro\Searchable\Searchable;
 
 class Post
 {
-    use SearchableModel;
+    use Searchable;
 
     protected $searchable = [
         // This will search on the defined searchable columns
@@ -73,14 +73,20 @@ class PostsController
 
 ## Documentation
 
+### Installation
+
+```
+composer require ajcastro/searchable
+```
+
 ### Searchable Model
 
 ```php
-use SedpMis\BaseGridQuery\SearchableModel;
+use AjCastro\Searchable\Searchable;
 
 class Post extends Model
 {
-    use SearchableModel;
+    use Searchable;
 
     /**
      * Searchable model definitions.
@@ -132,7 +138,7 @@ Post::where('likes', '>', 100)->search('Some post')->paginate();
 Sometimes our queries have lots of things and constraints to do and we can contain it in a search query class like this `PostSearch`.
 
 ```php
-use SedpMis\BaseGridQuery\BaseSearchQuery;
+use AjCastro\Searchable\BaseSearchQuery;
 
 class PostSearch extends BaseSearchQuery
 {
@@ -204,7 +210,7 @@ Post::search('Some search')->where(Post::searchQuery()->author_full_name, 'Willi
 You can run gridQuery and searchQuery on its own but you need to make sure you initiliaze your query.
 
 ```php
-use SedpMis\BaseGridQuery\BaseSearchQuery;
+use AjCastro\Searchable\BaseSearchQuery;
 
 class PostSearch extends BaseSearchQuery
 {
@@ -225,7 +231,7 @@ class PostSearch extends BaseSearchQuery
 ### Grid Query Declarative Definition
 
 ```php
-use SedpMis\BaseGridQuery\BaseGridQuery;
+use AjCastro\Searchable\BaseGridQuery;
 
 class PostGridQuery extends BaseGridQuery
 {
@@ -258,13 +264,13 @@ $gridQuery
 ### Search Query Declarative Definition
 
 ```php
-use SedpMis\BaseGridQuery\BaseSearchQuery;
+use AjCastro\Searchable\BaseSearchQuery;
 
 class PostSearch extends BaseSearchQuery
 {
     public function query()
     {
-        // $this->query is available since this is set on SearchableModel trait scopeSearch() method
+        // $this->query is available since this is set on Searchable trait scopeSearch() method
         // If you're going to run this searchQuery on its own and not via scopeSearch()
         // you should consider to initialize $this->query first or use initQuery() method instead of query()
         // just like the above example
