@@ -1,7 +1,7 @@
 {
-    "name": "sedp-mis/base-grid-query",
-    "description": "Abstraction for grid query",
-    "keywords": ["laravel", "grid query", "grid", "query", "data"],
+    "name": "ajcastro/searchable",
+    "description": "Full-text search and reusable queries in laravel.",
+    "keywords": ["laravel", "laravel-package", "query", "query-builder", "full-text-search", "eloquent-search", "grid"],
     "license": "MIT",
     "authors": [
         {
@@ -14,8 +14,11 @@
     },
     "autoload": {
         "psr-4": {
-            "SedpMis\\BaseGridQuery\\": "src"
+            "AjCastro\\Searchable\\": "src"
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "require-dev": {
+        "orchestra/testbench": "~3.0"
+    }
 }

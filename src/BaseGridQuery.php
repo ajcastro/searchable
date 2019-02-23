@@ -1,10 +1,9 @@
 <?php
 
-namespace SedpMis\BaseGridQuery;
+namespace AjCastro\Searchable;
 
 use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\DB as DB;
-use SedpMis\BaseGridQuery\Search\SublimeSearch;
+use Illuminate\Support\Facades\DB;
 
 abstract class BaseGridQuery
 {
@@ -16,127 +15,40 @@ abstract class BaseGridQuery
     protected $query;
 
     /**
-     * If the grid query is auto paginated. Useful for paginated rest-api.
-     *
-     * @var bool
-     */
-    protected $paginated = false;
-
-    /**
-     * Default number of items per page.
-     *
-     * @var int
-     */
-    protected $perPage = 15;
-
-    /**
-     * Initial page.
-     *
-     * @var int
-     */
-    protected $page = 1;
-
-    /**
-     * Search operator.
-     * Whether to use where or having in query to compare columns against search string.
-     * Values: where, having.
-     *
-     * @var string
-     */
-    protected $searchOperator = 'having';
-
-    /**
-     * If searching will be sorted by sort_index.
-     *
-     * @var bool
-     */
-    protected $sortSearch = true;
-
-    /**
      * Return the initialized specific query. This contains the joins logic and condition that make the query specific.
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function query()
     {
-        return $this->query ?: $this->initQuery();
+        return $this->query ?? $this->query = $this->initQuery();
     }
 
     /**
-     * Return the final query base from the query() method with its select statement from the columns() method.
+     * Return the final query of this gridQuery.
+     * By default context, we can call selectColumns() to return the query with its selected columns
+     * to treat them as the final query.
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function makeQuery()
     {
-        $query = $this->query()->select($this->makeSelect($this->columns()));
-
-        return $query;
+        return $this->selectColumns();
     }
 
     /**
-     * Set if auto-paginated.
+     * Return the query from the query() method with its select statement from the columns() method.
      *
-     * @param  bool $paginated
-     * @return $this
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function paginated($paginated = true)
+    public function selectColumns()
     {
-        $this->paginated = $paginated;
-
-        return $this;
+        return $this->query()->select($this->makeSelect($this->columns()));
     }
 
     /**
-     * Set per page and page parameters.
-     *
-     * @param  int  $perPage
-     * @param  int $page
-     * @return $this
-     */
-    public function paginate($perPage = null, $page = 1)
-    {
-        $this->paginated(true);
-
-        $this->perPage = $perPage ?: $this->perPage;
-        $this->page    = $page;
-
-        return $this;
-    }
-
-    /**
-     * Return the number of per page items.
-     *
-     * @return int
-     */
-    public function perPage()
-    {
-        return Request::get('per_page', $this->perPage);
-    }
-
-    /**
-     * Return the current page.
-     *
-     * @return int
-     */
-    public function page()
-    {
-        return Request::get('page', $this->page);
-    }
-
-    /**
-     * Return a page limitter returning limit and offset base from page and per_page parameters.
-     *
-     * @return mixed
-     */
-    public function pageLimitter()
-    {
-        return new PageLimitOffset($this->perPage(), $this->page());
-    }
-
-    /**
-     * Create an array of select parameters from the columns declaration,
-     * transforming string indexed element to have an alias "as".
+     * Create an array of select parameters that can be passed in $query->select().
+     * String indexed columns will be transformed to have an alias like "column_key as as actual_column".
      *
      * @param  array|null $columns
      * @return array
@@ -171,14 +83,14 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Set the created columns of the reportGrid to the query.
+     * Set the columns of this gridQuery instance of the grid to the given query's select clause.
      *
      * @param  \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function setSelectQuery($query)
     {
-        return $query->select($this->makeSelect($this->columns));
+        return $query->select($this->makeSelect($this->columns()));
     }
 
     /**
@@ -249,76 +161,6 @@ abstract class BaseGridQuery
     }
 
     /**
-     * Apply a search query.
-     *
-     * @param  string $searchStr
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function search($searchStr)
-    {
-        return $this->searcher()->search($searchStr);
-    }
-
-    /**
-     * Prepare and return the searchable query.
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    protected function searchableQuery()
-    {
-        $query = $this->makeQuery();
-
-        if ($this->paginated) {
-            $query->limit($this->pageLimitter()->limit());
-            $query->offset($this->pageLimitter()->offset());
-        }
-
-        return $query;
-    }
-
-    /**
-     * Return a searcher, the search query logic and algorithm.
-     *
-     * @return mixed
-     */
-    public function searcher()
-    {
-        return new SublimeSearch(
-            $this->searchableQuery(),
-            $this->searchOperator === 'having' ? $this->columnKeys() : array_values($this->columns()),
-            $this->sortSearch,
-            method_exists($this, 'sortColumns') ? $this->sortColumns() : $this->columns(),
-            $this->searchOperator
-        );
-    }
-
-    /**
-     * Set search operator.
-     *
-     * @param  string $searchOperator
-     * @return $this
-     */
-    public function setSearchOperator($searchOperator)
-    {
-        $this->searchOperator = $searchOperator;
-
-        return $this;
-    }
-
-    /**
-     * Set sortSearch value.
-     *
-     * @param  bool $bool
-     * @return $this
-     */
-    public function sortSearch($sortSearch = true)
-    {
-        $this->sortSearch = $sortSearch;
-
-        return $this;
-    }
-
-    /**
      * Initialize query.
      *
      * @return \Illuminate\Database\Eloquent\Builder
@@ -326,29 +168,6 @@ abstract class BaseGridQuery
     public function initQuery()
     {
         throw new \Exception('Please create self initQuery() method on '.get_class($this).'.');
-    }
-
-    /**
-     * Get the keys of columns to be used in the query result.
-     *
-     * @return array
-     */
-    public function columnKeys()
-    {
-        $columnKeys = [];
-
-        foreach ($this->columns() as $key => $column) {
-            if (is_string($key)) {
-                $columnKeys[] = $key;
-            } elseif (str_contains($column, '.')) {
-                list($table, $columnKey) = explode('.', $column);
-                $columnKeys[]            = $columnKey;
-            } else {
-                $columnKeys[] = $column;
-            }
-        }
-
-        return $columnKeys;
     }
 
     /**

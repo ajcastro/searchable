@@ -1,50 +1,29 @@
 <?php
 
-namespace SedpMis\BaseGridQuery\Search;
+namespace AjCastro\Searchable\Search;
 
-use DB;
+use Illuminate\Support\Facades\DB;
+use AjCastro\Searchable\BaseSearchQuery;
 
 /**
  * A search query resembling the behaviour in sublime file search (ctrl+p).
  */
-class SublimeSearch
+class SublimeSearch extends BaseSearchQuery
 {
-    /**
-     * Searchable columns.
-     *
-     * @var array
-     */
-    protected $searchable = [];
-
-    /**
-     * The query for the search.
-     *
-     * @var \Illuminate\Database\Eloquent\Builder
-     */
-    protected $query;
-
-    /**
-     * If query should be sorted.
-     *
-     * @var bool
-     */
-    protected $sort = true;
-
     /**
      * Columns for sorting query.
      *
      * @var array
      */
-    protected $sortColumns = [];
+    protected $columns = [];
 
     /**
-     * Search operator.
-     * Whether to use where or having in query to compare columns against search string.
-     * Values: where, having.
+     * Search string.
+     * This is set everytime search() is called.
      *
      * @var string
      */
-    protected $searchOperator = 'having';
+    protected $searchStr;
 
     /**
      * Construct.
@@ -52,35 +31,14 @@ class SublimeSearch
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @param array $searchable
      * @param bool $sort
-     * @param array $sortColumns
+     * @param array $columns
      */
-    public function __construct($query, $searchable = [], $sort = true, $sortColumns = [], $searchOperator = 'having')
+    public function __construct($query, $columns = [], $sort = true, $searchOperator = 'where')
     {
         $this->query          = $query;
-        $this->searchable     = $searchable;
+        $this->columns        = $columns;
         $this->sort           = $sort;
-        $this->sortColumns    = $sortColumns;
         $this->searchOperator = $searchOperator;
-    }
-
-    /**
-     * Return searchable column names.
-     *
-     * @return array
-     */
-    public function searchable()
-    {
-        return $this->searchable;
-    }
-
-    /**
-     * Return the query for the search.
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function query()
-    {
-        return $this->query;
     }
 
     /**
@@ -91,7 +49,7 @@ class SublimeSearch
      */
     public function getColumn($columnKey)
     {
-        $columns = $this->searchable();
+        $columns = $this->columnsToCompare();
 
         if (array_key_exists($columnKey, $columns)) {
             return $columns[$columnKey];
@@ -105,14 +63,36 @@ class SublimeSearch
     }
 
     /**
-     * Getter for searchable column.
+     * Return the searchable columns to compare, actual columns for `where` operator and alias column names for `having` operator.
      *
-     * @param  string $columnKey
-     * @return string|mixed
+     * @return array
      */
-    public function __get($columnKey)
+    public function columnsToCompare()
     {
-        return $this->getColumn($columnKey);
+        return $this->searchOperator === 'having' ? $this->columnKeys() : $this->columns();
+    }
+
+    /**
+     * Get the keys of columns to be used in the query result.
+     *
+     * @return array
+     */
+    public function columnKeys()
+    {
+        $columnKeys = [];
+
+        foreach ($this->columns() as $key => $column) {
+            if (is_string($key)) {
+                $columnKeys[] = $key;
+            } elseif (str_contains($column, '.')) {
+                list($table, $columnKey) = explode('.', $column);
+                $columnKeys[]            = $columnKey;
+            } else {
+                $columnKeys[] = $column;
+            }
+        }
+
+        return $columnKeys;
     }
 
     /**
@@ -125,45 +105,16 @@ class SublimeSearch
     {
         $conditions = [];
 
-        $parsedStr = $this->parseSearchStr($searchStr);
+        $parsedStr = $this->parseSearchStr($this->searchStr = $searchStr);
 
-        foreach ($this->searchable() as $column) {
+        foreach ($this->columnsToCompare() as $column) {
             $conditions[] = $column.' like "'.$parsedStr.'"';
         }
 
         $method = $this->searchOperator.'Raw';
         $query  = $this->query()->{$method}('('.join(' OR ', $conditions).')');
 
-        if ($this->sort) {
-            $this->applySort($query, $searchStr);
-        }
-
         return $query;
-    }
-
-    /**
-     * Set searchable columns.
-     *
-     * @param array $searchable
-     */
-    public function setSearchable($searchable = [])
-    {
-        $this->searchable = $searchable;
-
-        return $this;
-    }
-
-    /**
-     * Set if query should be sorted.
-     *
-     * @param  bool $sort
-     * @return $this
-     */
-    public function sort($sort)
-    {
-        $this->sort = $sort;
-
-        return $this;
     }
 
     /**
@@ -184,41 +135,8 @@ class SublimeSearch
      *
      * @return array
      */
-    public function sortColumns()
+    public function columns()
     {
-        return $this->sortColumns;
-    }
-
-    /**
-     * Apply sort in query. By default using mysql locate function.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $searchStr
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    protected function applySort($query, $searchStr)
-    {
-        if (empty($searchStr) || count($sortColumns = $this->sortColumns()) == 0) {
-            return $query;
-        }
-
-        $sortColumns = array_map(function ($column) {
-            return DB::raw("IFNULL(({$column}), '')");
-        }, $sortColumns);
-
-        $sqls              = [];
-        $concatSortColumns = 'CONCAT('.join(',', $sortColumns).')';
-
-        for ($i = 0, $j = strlen($searchStr); $i < $j; $i++) {
-            $character = $searchStr[$i];
-
-            $counter = $i + 1;
-            $sqls[]  = "LOCATE('".addslashes($character)."', {$concatSortColumns}, {$counter})";
-        }
-
-        $query->addSelect(DB::raw('('.implode('+', $sqls).') AS sort_index'));
-        $query->orderBy('sort_index', 'asc');
-
-        return $query;
+        return $this->columns;
     }
 }

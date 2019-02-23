@@ -1,11 +1,11 @@
 <?php
 
-namespace SedpMis\BaseGridQuery;
+namespace AjCastro\Searchable;
 
 use Illuminate\Support\Facades\Schema;
-use SedpMis\BaseGridQuery\Search\SublimeSearch;
+use AjCastro\Searchable\Search\SublimeSearch;
 
-trait SearchableModel
+trait Searchable
 {
     protected static $allSearchableColumns = [];
 
@@ -65,7 +65,7 @@ trait SearchableModel
     /**
      * Return the search query.
      *
-     * @return mixed|\SedpMis\BaseGridQuery\Search\SublimeSearch
+     * @return mixed|\AjCastro\Searchable\Search\SublimeSearch
      */
     public static function searchQuery()
     {
@@ -83,7 +83,7 @@ trait SearchableModel
      *
      * @param  query $query
      * @param  string $search
-     * @param  \SedpMis\BaseGridQuery\BaseSearchQuery $searchQuery
+     * @param  \AjCastro\Searchable\BaseSearchQuery $searchQuery
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
