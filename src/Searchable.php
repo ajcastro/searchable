@@ -101,4 +101,82 @@ trait Searchable
             $searchQuery->sortByRelevance($query);
         }
     }
+
+    public function setSearchable($config)
+    {
+        if ($columns = array_get($config, 'columns')) {
+            $this->setSearchableColumns($columns);
+        }
+
+        if ($joins = array_get($config, 'joins')) {
+            $this->setSearchableJoins($joins);
+        }
+
+        return $this;
+    }
+
+    public function setSearchableColumns($columns)
+    {
+        if (property_exists($this, 'searchableColumns')) {
+            $this->searchableColumns = $columns;
+        }
+
+        if (property_exists($this, 'searchable')) {
+            $this->searchable['columns'] = $columns;
+        }
+
+        return $this;
+    }
+
+    public function setSearchableJoins($joins)
+    {
+        if (property_exists($this, 'searchableJoins')) {
+            $this->searchableJoins = $joins;
+        }
+
+        if (property_exists($this, 'searchable')) {
+            $this->searchable['joins'] = $joins;
+        }
+
+        return $this;
+    }
+
+    public function addSearchable($config)
+    {
+        if ($columns = array_get($config, 'columns')) {
+            $this->addSearchableColumns($columns);
+        }
+
+        if ($joins = array_get($config, 'joins')) {
+            $this->addSearchableJoins($joins);
+        }
+
+        return $this;
+    }
+
+    public function addSearchableColumns($columns)
+    {
+        if (property_exists($this, 'searchableColumns')) {
+            $this->searchableColumns = $columns + $this->searchableColumns;
+        }
+
+        if (property_exists($this, 'searchable')) {
+            $this->searchable['columns'] = $columns + $this->searchable['columns'];
+        }
+
+        return $this;
+    }
+
+    public function addSearchableJoins($joins)
+    {
+        if (property_exists($this, 'searchableJoins')) {
+            $this->searchableJoins = $joins + $this->searchableJoins;
+        }
+
+        if (property_exists($this, 'searchable')) {
+            $this->searchable['joins'] = $joins + $this->searchable['joins'];
+        }
+
+        return $this;
+    }
 }

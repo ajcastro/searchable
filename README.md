@@ -133,6 +133,29 @@ Post::search('Some post')->paginate();
 Post::where('likes', '>', 100)->search('Some post')->paginate();
 ```
 
+### Set searchable configurations on runtime.
+
+```php
+$post = new Post;
+$post->setSearchable([ // addSearchable() method is also available
+    'columns' => [
+        'posts.title',
+        'posts.body',
+    ],
+    'joins' => [
+        'authors' => ['authors.id', 'posts.author_id']
+    ]
+]);
+// or
+$post->setSearchableColumns([ // addSearchableColumns() method is also available
+    'posts.title',
+    'posts.body',
+]);
+$post->setSearchableJoins([ // addSearchableJoins() method is also available
+    'authors' => ['authors.id', 'posts.author_id']
+]);
+```
+
 ### Searchable Model Custom Search Query
 
 Sometimes our queries have lots of things and constraints to do and we can contain it in a search query class like this `PostSearch`.
@@ -310,5 +333,5 @@ $results = [
 
 ## Credits
 
-- Ray Anthony Madrona [@raymadrona](https://github.com/raymadrona), for the sort relevance using MySQL `LOCATE()`.
+- Ray Anthony Madrona [@raymadrona](https://github.com/raymadrona), for the tips on using MySQL `LOCATE()` for sort relevance.
 - [nicolaslopezj/searchable](https://github.com/nicolaslopezj/searchable), for the `$searchable` property declaration style.
