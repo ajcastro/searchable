@@ -58,7 +58,7 @@ class PostsController
 {
     public function index()
     {
-        return Post::search(request('search'))
+        return Post::sortByRelevance(request()->bool('sort_by'))->search(request('search'))
             ->when($sortColumn = request('sort_by'), function ($query) use ($sortColumn) {
                 $query->orderBy(
                     \DB::raw($this->model->searchQuery()->getColumn($sortColumn) ?? $sortColumn),
@@ -131,6 +131,16 @@ class Post extends Model
 // This only search on the defined columns.
 Post::search('Some post')->paginate();
 Post::where('likes', '>', 100)->search('Some post')->paginate();
+
+```
+
+This will addSelect field `sort_index` which will used to order or sort by relevance.
+If you want to disable sort by relevance, call method `sortByRelevance(false)` before `search()` method.
+Example:
+
+```
+Post::sortByRelevance(false)->search('Some post')->paginate();
+Post::sortByRelevance(false)->where('likes', '>', 100)->search('Some post')->paginate();
 ```
 
 ### Set searchable configurations on runtime.

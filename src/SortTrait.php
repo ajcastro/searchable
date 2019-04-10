@@ -13,7 +13,7 @@ trait SortTrait
     protected $sort = true;
 
     /**
-     * Set sort value.
+     * Set sort boolean.
      *
      * @param  bool $bool
      * @return $this
@@ -26,24 +26,35 @@ trait SortTrait
     }
 
     /**
-     * Whether this search query should sort by sort_index.
+     * Set sort boolean.
+     *
+     * @param  bool $bool
+     * @return $this
+     */
+    public function sortByRelevance($sort = true)
+    {
+        return $this->sort($sort);
+    }
+
+    /**
+     * Whether this search query should sort by relevance with key of `sort_index`.
      *
      * @return boolean
      */
-    public function hasSort()
+    public function shouldSortByRelevance()
     {
         return $this->sort;
     }
 
     /**
-     * Sort the query by relevance to the search.
+     * Apply sorting query by relevance to the search.
      * By default using mysql locate function.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @param string $searchStr
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function sortByRelevance()
+    public function applySortByRelevance()
     {
         if (!method_exists($this, 'sortColumns')) {
             throw new \Exception("Using SortTrait requires sortColumns() method.");

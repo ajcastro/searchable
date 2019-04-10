@@ -49,17 +49,7 @@ class SublimeSearch extends BaseSearchQuery
      */
     public function getColumn($columnKey)
     {
-        $columns = $this->columnsToCompare();
-
-        if (array_key_exists($columnKey, $columns)) {
-            return $columns[$columnKey];
-        }
-
-        foreach ($columns as $column) {
-            if ($column === $columnKey || ends_with($column, ".{$columnKey}")) {
-                return $column;
-            }
-        }
+        return $this->findColumn($this->columnsToCompare(), $columnKey);
     }
 
     /**
