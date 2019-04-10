@@ -58,7 +58,7 @@ class PostsController
 {
     public function index()
     {
-        return Post::sortByRelevance(request()->bool('sort_by'))->search(request('search'))
+        return Post::sortByRelevance(!request()->bool('sort_by'))->search(request('search'))
             ->when($sortColumn = request('sort_by'), function ($query) use ($sortColumn) {
                 $query->orderBy(
                     \DB::raw($this->model->searchQuery()->getColumn($sortColumn) ?? $sortColumn),
