@@ -58,7 +58,7 @@ class PostsController
 {
     public function index()
     {
-        return Post::search(request('search'))
+        return Post::sortByRelevance(!request()->bool('sort_by'))->search(request('search'))
             ->when($sortColumn = request('sort_by'), function ($query) use ($sortColumn) {
                 $query->orderBy(
                     \DB::raw($this->model->searchQuery()->getColumn($sortColumn) ?? $sortColumn),
@@ -131,6 +131,39 @@ class Post extends Model
 // This only search on the defined columns.
 Post::search('Some post')->paginate();
 Post::where('likes', '>', 100)->search('Some post')->paginate();
+
+```
+
+This will addSelect field `sort_index` which will used to order or sort by relevance.
+If you want to disable sort by relevance, call method `sortByRelevance(false)` before `search()` method.
+Example:
+
+```
+Post::sortByRelevance(false)->search('Some post')->paginate();
+Post::sortByRelevance(false)->where('likes', '>', 100)->search('Some post')->paginate();
+```
+
+### Set searchable configurations on runtime.
+
+```php
+$post = new Post;
+$post->setSearchable([ // addSearchable() method is also available
+    'columns' => [
+        'posts.title',
+        'posts.body',
+    ],
+    'joins' => [
+        'authors' => ['authors.id', 'posts.author_id']
+    ]
+]);
+// or
+$post->setSearchableColumns([ // addSearchableColumns() method is also available
+    'posts.title',
+    'posts.body',
+]);
+$post->setSearchableJoins([ // addSearchableJoins() method is also available
+    'authors' => ['authors.id', 'posts.author_id']
+]);
 ```
 
 ### Searchable Model Custom Search Query
@@ -310,5 +343,5 @@ $results = [
 
 ## Credits
 
-- Ray Anthony Madrona [@raymadrona](https://github.com/raymadrona), for the sort relevance using MySQL `LOCATE()`.
+- Ray Anthony Madrona [@raymadrona](https://github.com/raymadrona), for the tips on using MySQL `LOCATE()` for sort relevance.
 - [nicolaslopezj/searchable](https://github.com/nicolaslopezj/searchable), for the `$searchable` property declaration style.

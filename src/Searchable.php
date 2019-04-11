@@ -9,6 +9,8 @@ trait Searchable
 {
     protected static $allSearchableColumns = [];
 
+    protected $sortByRelevance = true;
+
     /**
      * Return the searchable columns for this model's table.
      *
@@ -85,7 +87,7 @@ trait Searchable
      * @param  string $search
      * @param  \AjCastro\Searchable\BaseSearchQuery $searchQuery
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return void
      */
     public function scopeSearch($query, $search, $searchQuery = null)
     {
@@ -97,8 +99,156 @@ trait Searchable
 
         $searchQuery->setQuery($query)->search($search)->select($this->getTable().'.*');
 
-        if ($searchQuery->hasSort()) {
-            $searchQuery->sortByRelevance($query);
+        if ($query->getModel()->shouldSortByRelevance()) {
+            $searchQuery->applySortByRelevance();
         }
+    }
+
+    /**
+     * Scope query to set $sortByRelevance.
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  boolean $sortByRelevance
+     * @return void
+     */
+    public function scopeSortByRelevance($query, $sortByRelevance = true)
+    {
+        $query->getModel()->searchableSortByRelevance($sortByRelevance);
+    }
+
+    /**
+     * Set model's $sortByRelevance for searchable query.
+     *
+     * @param  boolean $sortByRelevance
+     * @return $this
+     */
+    public function searchableSortByRelevance($sortByRelevance = true)
+    {
+        $this->sortByRelevance = $sortByRelevance;
+
+        return $this;
+    }
+
+    /**
+     * If model should sort by relevance.
+     *
+     * @return bool
+     */
+    public function shouldSortByRelevance()
+    {
+        return $this->sortByRelevance;
+    }
+
+    /**
+     * Set $searchable.
+     *
+     * @param array $config
+     * @return  $this
+     */
+    public function setSearchable($config)
+    {
+        if ($columns = array_get($config, 'columns')) {
+            $this->setSearchableColumns($columns);
+        }
+
+        if ($joins = array_get($config, 'joins')) {
+            $this->setSearchableJoins($joins);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set searchable columns.
+     *
+     * @param array $columns
+     * @return  $this
+     */
+    public function setSearchableColumns($columns)
+    {
+        if (property_exists($this, 'searchableColumns')) {
+            $this->searchableColumns = $columns;
+        }
+
+        if (property_exists($this, 'searchable')) {
+            $this->searchable['columns'] = $columns;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set searchable joins.
+     *
+     * @param array $joins
+     * @return  $this
+     */
+    public function setSearchableJoins($joins)
+    {
+        if (property_exists($this, 'searchableJoins')) {
+            $this->searchableJoins = $joins;
+        }
+
+        if (property_exists($this, 'searchable')) {
+            $this->searchable['joins'] = $joins;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add searchable.
+     *
+     * @param array $config
+     * @return  $this
+     */
+    public function addSearchable($config)
+    {
+        if ($columns = array_get($config, 'columns')) {
+            $this->addSearchableColumns($columns);
+        }
+
+        if ($joins = array_get($config, 'joins')) {
+            $this->addSearchableJoins($joins);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add searchable columns.
+     *
+     * @param array $config
+     * @return  $this
+     */
+    public function addSearchableColumns($columns)
+    {
+        if (property_exists($this, 'searchableColumns')) {
+            $this->searchableColumns = $columns + $this->searchableColumns;
+        }
+
+        if (property_exists($this, 'searchable')) {
+            $this->searchable['columns'] = $columns + $this->searchable['columns'];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add searchable joins.
+     *
+     * @param array $config
+     * @return  $this
+     */
+    public function addSearchableJoins($joins)
+    {
+        if (property_exists($this, 'searchableJoins')) {
+            $this->searchableJoins = $joins + $this->searchableJoins;
+        }
+
+        if (property_exists($this, 'searchable')) {
+            $this->searchable['joins'] = $joins + $this->searchable['joins'];
+        }
+
+        return $this;
     }
 }
