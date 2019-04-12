@@ -58,10 +58,11 @@ class PostsController
 {
     public function index()
     {
-        return Post::sortByRelevance(!request()->bool('sort_by'))->search(request('search'))
-            ->when($sortColumn = request('sort_by'), function ($query) use ($sortColumn) {
+        return Post::sortByRelevance(!request()->bool('sort_by'))
+            ->search(request('search'))
+            ->when(Post::isColumnValid($sortColumn = request('sort_by')), function ($query) use ($sortColumn) {
                 $query->orderBy(
-                    \DB::raw($this->model->searchQuery()->getColumn($sortColumn) ?? $sortColumn),
+                    \DB::raw(Post::searchQuery()->getColumn($sortColumn) ?? $sortColumn),
                     request()->bool('descending') ? 'desc' : 'asc'
                 );
             })
@@ -339,6 +340,25 @@ $results = [
     ],
     // ... and so on
 ];
+```
+
+## Helper methods available on model
+
+### isColumnValid
+
+- Identifies if the column is a valid column, either a regular table column or derived column.
+- Useful for checking valid columns to avoid sql injection especially in `orderBy` query.
+
+```php
+Post::isColumnValid(request('sort_by'));
+```
+
+### getTableColumns
+
+- Get the table columns.
+
+```php
+Post::getTableColumns();
 ```
 
 ## Credits

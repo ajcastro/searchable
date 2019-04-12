@@ -2,6 +2,7 @@
 
 namespace AjCastro\Searchable;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Schema;
 use AjCastro\Searchable\Search\SublimeSearch;
 
@@ -26,11 +27,50 @@ trait Searchable
             return $this->searchable['columns'];
         }
 
-        if (!array_key_exists($table = $this->getTable(), static::$allSearchableColumns)) {
+        return static::getTableColumns($this->getTable());
+    }
+
+    /**
+     * Get table columns.
+     *
+     * @param  string $table
+     * @return array
+     */
+    public static function getTableColumns($table = null)
+    {
+        $table = $table ?? (new static)->getTable();
+
+        if (!Arr::has(static::$allSearchableColumns, $table)) {
             static::$allSearchableColumns[$table] = Schema::getColumnListing($table);
         }
 
         return static::$allSearchableColumns[$table];
+    }
+
+    /**
+     * Identifies if the column is a valid column, either a regular table column or derived column.
+     * Useful for checking valid columns to avoid sql injection especially in orderBy query.
+     *
+     * @param  string  $column
+     * @return boolean
+     */
+    public static function isColumnValid($column)
+    {
+        $model = new static;
+        $searchableColumns = $model->searchableColumns();
+
+        // Derived columns are a key in searchableColumns.
+        if (array_key_exists($column, $searchableColumns)) {
+            return true;
+        }
+
+        // Regular table column can be included in the searchableColumns.
+        if (in_array($column, $searchableColumns)) {
+            return true;
+        }
+
+        // Regular table column from the table
+        return in_array($column, static::getTableColumns($model->getTable()));
     }
 
     /**
