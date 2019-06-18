@@ -6,8 +6,6 @@ use AjCastro\Searchable\Search\SublimeSearch;
 
 abstract class BaseSearchQuery extends BaseGridQuery
 {
-    use SortTrait;
-
     /**
      * Search operator.
      * Whether to use where or having in query to compare columns against search string.
@@ -26,14 +24,12 @@ abstract class BaseSearchQuery extends BaseGridQuery
     protected $searchStr;
 
     /**
-     * Prepare and return the searchable query.
+     * If searching will be sorted by sort_index.
+     * This is the relevance score of the search string.
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @var bool
      */
-    protected function searchableQuery()
-    {
-        return $this->query();
-    }
+    protected $sort = true;
 
     /**
      * Apply a search query.
@@ -54,7 +50,7 @@ abstract class BaseSearchQuery extends BaseGridQuery
     public function searcher()
     {
         return new SublimeSearch(
-            $this->searchableQuery(),
+            $this->query(),
             $this->columns(),
             $this->sort,
             $this->searchOperator
@@ -82,5 +78,56 @@ abstract class BaseSearchQuery extends BaseGridQuery
         $this->searchOperator = $searchOperator;
 
         return $this;
+    }
+
+    /**
+     * Alias of sortByRelevance.
+     *
+     * @param  bool $bool
+     * @return $this
+     */
+    public function sort($sort = true)
+    {
+        return $this->sortByRelevance($sort);
+    }
+
+    /**
+     * Set sort boolean.
+     *
+     * @param  bool $bool
+     * @return $this
+     */
+    public function sortByRelevance($sort = true)
+    {
+        $this->sort = $sort;
+
+        return $this;
+    }
+
+    /**
+     * Whether this search query should sort by relevance with key of `sort_index`.
+     *
+     * @return boolean
+     */
+    public function shouldSortByRelevance()
+    {
+        return $this->sort;
+    }
+
+    /**
+     * Apply sorting query by relevance to the search.
+     * By default using mysql locate function.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $searchStr
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function applySortByRelevance()
+    {
+        if (!method_exists($this, 'sortColumns')) {
+            throw new \Exception("Sort by relevance requires sortColumns() method.");
+        }
+
+        SortByRelevance::sort($this->query, $this->sortColumns(), $this->searchStr);
     }
 }

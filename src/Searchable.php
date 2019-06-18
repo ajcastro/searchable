@@ -12,6 +12,8 @@ trait Searchable
 
     protected $sortByRelevance = true;
 
+    protected $searchQuery;
+
     /**
      * Return the searchable columns for this model's table.
      *
@@ -109,15 +111,29 @@ trait Searchable
      *
      * @return mixed|\AjCastro\Searchable\Search\SublimeSearch
      */
-    public static function searchQuery()
+    public function searchQuery()
     {
-        $model = new static;
-
-        if (method_exists($model, 'defaultSearchQuery')) {
-            return $model->defaultSearchQuery();
+        if ($this->searchQuery) {
+            return $this->searchQuery;
         }
 
-        return new SublimeSearch($model, $model->searchableColumns(), true, 'where');
+        if (method_exists($this, 'defaultSearchQuery')) {
+            return $this->searchQuery = $this->defaultSearchQuery();
+        }
+
+        return $this->searchQuery = new SublimeSearch($this, $this->searchableColumns(), $this->sortByRelevance, 'where');
+    }
+
+    /**
+     * Set the model's search query.
+     *
+     * @param  \AjCastro\Searchable\BaseSearchQuery $searchQuery
+     */
+    public function setSearchQuery($searchQuery)
+    {
+        $this->searchQuery = $searchQuery;
+
+        return $this;
     }
 
     /**
@@ -125,23 +141,16 @@ trait Searchable
      *
      * @param  query $query
      * @param  string $search
-     * @param  \AjCastro\Searchable\BaseSearchQuery $searchQuery
      *
      * @return void
      */
-    public function scopeSearch($query, $search, $searchQuery = null)
+    public function scopeSearch($query, $search)
     {
-        if (is_null($searchQuery)) {
-            $this->applySearchableJoins($query);
-        }
+        $this->applySearchableJoins($query);
 
-        $searchQuery = $searchQuery ?: static::searchQuery();
+        $query->select($this->getTable().'.*');
 
-        $searchQuery->setQuery($query)->search($search)->select($this->getTable().'.*');
-
-        if ($query->getModel()->shouldSortByRelevance()) {
-            $searchQuery->applySortByRelevance();
-        }
+        $this->searchQuery()->setQuery($query)->search($search);
     }
 
     /**
@@ -164,6 +173,8 @@ trait Searchable
     public function searchableSortByRelevance($sortByRelevance = true)
     {
         $this->sortByRelevance = $sortByRelevance;
+
+        $this->searchQuery()->sortByRelevance($sortByRelevance);
 
         return $this;
     }
