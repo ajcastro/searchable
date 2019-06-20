@@ -104,6 +104,10 @@ class SublimeSearch extends BaseSearchQuery
         $method = $this->searchOperator.'Raw';
         $query  = $this->query()->{$method}('('.join(' OR ', $conditions).')');
 
+        if ($this->shouldSortByRelevance()) {
+            $this->applySortByRelevance();
+        }
+
         return $query;
     }
 
