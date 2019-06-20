@@ -361,6 +361,11 @@ Post::isColumnValid(request('sort_by'));
 Post::getTableColumns();
 ```
 
+## Warning
+
+Calling `select()` after `search()` will overwrite `sort_index` field, so it is recommended to call `select()`
+before `search()` which is also the normal case.
+
 ## Credits
 
 - Ray Anthony Madrona [@raymadrona](https://github.com/raymadrona), for the tips on using MySQL `LOCATE()` for sort relevance.
