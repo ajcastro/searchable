@@ -148,7 +148,9 @@ trait Searchable
     {
         $this->applySearchableJoins($query);
 
-        $query->select($this->getTable().'.*');
+        if (empty($query->getQuery()->columns)) {
+            $query->select([$query->getQuery()->from.'.*']);
+        }
 
         $this->searchQuery()->setQuery($query)->search($search);
     }
