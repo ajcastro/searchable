@@ -344,7 +344,7 @@ $results = [
 
 ## Helper methods available on model
 
-### isColumnValid
+### isColumnValid [static]
 
 - Identifies if the column is a valid column, either a regular table column or derived column.
 - Useful for checking valid columns to avoid sql injection especially in `orderBy` query.
@@ -353,12 +353,44 @@ $results = [
 Post::isColumnValid(request('sort_by'));
 ```
 
-### getTableColumns
+### getTableColumns [static]
 
 - Get the table columns.
 
 ```php
 Post::getTableColumns();
+```
+
+### enableSearchable
+
+- Enable the searchable behavior.
+
+```php
+$query->getModel()->enableSearchable();
+$query->search('foo');
+```
+
+### disableSearchable
+
+- Disable the searchable behavior.
+- Calling `search()` method will not perform a search.
+
+```php
+$query->getModel()->disableSearchable();
+$query->search('foo');
+```
+
+### setSearchable
+
+- Set or override the model's `$searchable` property.
+- Useful for building searchable config on runtime.
+
+```php
+$query->getModel()->setSearchable([
+  'columns' => ['title', 'status'],
+  'joins' => [...],
+]);
+$query->search('foo');
 ```
 
 ## Warning
