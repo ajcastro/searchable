@@ -93,16 +93,22 @@ class SublimeSearch extends BaseSearchQuery
      */
     public function search($searchStr)
     {
-        $conditions = [];
+        $columnsToCompare = $this->columnsToCompare();
+        $conditions       = [];
+        $query            = $this->query();
+
+        if (count($columnsToCompare) === 0) {
+            return $query;
+        }
 
         $parsedStr = $this->parseSearchStr($this->searchStr = $searchStr);
 
-        foreach ($this->columnsToCompare() as $column) {
+        foreach ($columnsToCompare as $column) {
             $conditions[] = $column.' like "'.$parsedStr.'"';
         }
 
         $method = $this->searchOperator.'Raw';
-        $query  = $this->query()->{$method}('('.join(' OR ', $conditions).')');
+        $query->{$method}('('.join(' OR ', $conditions).')');
 
         if ($this->shouldSortByRelevance()) {
             $this->applySortByRelevance();
