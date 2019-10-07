@@ -35,6 +35,24 @@ trait Searchable
     }
 
     /**
+     * Return the sortable columns for this model's table.
+     *
+     * @return array
+     */
+    public function sortableColumns()
+    {
+        if (property_exists($this, 'sortableColumns')) {
+            return $this->sortableColumns;
+        }
+
+        if (property_exists($this, 'searchable') && array_key_exists('sortable_columns', $this->searchable)) {
+            return $this->searchable['sortable_columns'];
+        }
+
+        return static::getTableColumns($this->getTable());
+    }
+
+    /**
      * Get table columns.
      *
      * @param  string $table
@@ -61,20 +79,34 @@ trait Searchable
     public static function isColumnValid($column)
     {
         $model = new static;
-        $searchableColumns = $model->searchableColumns();
+        $allColumns = array_merge($model->searchableColumns(), $model->sortableColumns());
 
-        // Derived columns are a key in searchableColumns.
-        if (array_key_exists($column, $searchableColumns)) {
+        // Derived columns are a key in allColumns.
+        if (array_key_exists($column, $allColumns)) {
             return true;
         }
 
-        // Regular table column can be included in the searchableColumns.
-        if (in_array($column, $searchableColumns)) {
+        // Regular table column can be included in the allColumns.
+        if (in_array($column, $allColumns)) {
             return true;
         }
 
         // Regular table column from the table
         return in_array($column, static::getTableColumns($model->getTable()));
+    }
+
+    /**
+     * Get the actual sortable column.
+     *
+     * @param  string $column
+     * @return string|mixed
+     */
+    public static function getSortableColumn($column)
+    {
+        $model = new static;
+        $allColumns = array_merge($model->searchableColumns(), $model->sortableColumns());
+
+        return BaseGridQuery::findColumn($allColumns, $column);
     }
 
     /**
