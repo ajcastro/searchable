@@ -102,7 +102,6 @@ abstract class BaseGridQuery
     public function getColumn($columnKey)
     {
         return $this->findColumn($this->columns(), $columnKey);
-
     }
 
     /**
@@ -112,7 +111,7 @@ abstract class BaseGridQuery
      * @param string $columnKey
      * @return string
      */
-    public function findColumn($columns, $columnKey)
+    public static function findColumn($columns, $columnKey)
     {
         if (array_key_exists($columnKey, $columns)) {
             return $columns[$columnKey];

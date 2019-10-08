@@ -62,7 +62,11 @@ class PostsController
             ->search(request('search'))
             ->when(Post::isColumnValid($sortColumn = request('sort_by')), function ($query) use ($sortColumn) {
                 $query->orderBy(
-                    \DB::raw(Post::searchQuery()->getColumn($sortColumn) ?? $sortColumn),
+                    \DB::raw(
+                        (new Post)->getSortableColumn($sortColumn) ?? // valid sortable column
+                        (new Post)->searchQuery()->getColumn($sortColumn) ?? // valid search column
+                        $sortColumn // valid original table column
+                    ),
                     request()->bool('descending') ? 'desc' : 'asc'
                 );
             })
@@ -165,6 +169,34 @@ $post->setSearchableColumns([ // addSearchableColumns() method is also available
 $post->setSearchableJoins([ // addSearchableJoins() method is also available
     'authors' => ['authors.id', 'posts.author_id']
 ]);
+```
+
+### Easy Sortable Columns
+
+You can define columns to be only sortable but not be part of search query constraint.
+Just put it under `sortable_columns` as shown below .
+This column can be easily access to put in `orderBy` of query builder. All searchable columns are also sortable columns.
+
+```php
+class Post {
+     protected $searchable = [
+        'columns' => [
+            'title' => 'posts.title',
+        ],
+        'sortable_columns' => [
+            'status_name' => 'statuses.name',
+        ],
+        'joins' => [
+            'statuses' => ['statuses.id', 'posts.status_id']
+        ]
+    ];
+}
+
+// Usage
+
+Post::search('A post title')->orderBy(Post::getSortableColumn('status_name'));
+// This will only perform search on `posts`.`title` column and it will append "order by `statuses`.`name`" in the query.
+// This is beneficial if your column is mapped to a different column name coming from front-end request.
 ```
 
 ### Searchable Model Custom Search Query

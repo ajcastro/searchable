@@ -35,6 +35,24 @@ trait Searchable
     }
 
     /**
+     * Return the sortable columns for this model's table.
+     *
+     * @return array
+     */
+    public function sortableColumns()
+    {
+        if (property_exists($this, 'sortableColumns')) {
+            return $this->sortableColumns;
+        }
+
+        if (property_exists($this, 'searchable') && array_key_exists('sortable_columns', $this->searchable)) {
+            return $this->searchable['sortable_columns'];
+        }
+
+        return static::getTableColumns($this->getTable());
+    }
+
+    /**
      * Get table columns.
      *
      * @param  string $table
@@ -61,20 +79,34 @@ trait Searchable
     public static function isColumnValid($column)
     {
         $model = new static;
-        $searchableColumns = $model->searchableColumns();
+        $allColumns = array_merge($model->searchableColumns(), $model->sortableColumns());
 
-        // Derived columns are a key in searchableColumns.
-        if (array_key_exists($column, $searchableColumns)) {
+        // Derived columns are a key in allColumns.
+        if (array_key_exists($column, $allColumns)) {
             return true;
         }
 
-        // Regular table column can be included in the searchableColumns.
-        if (in_array($column, $searchableColumns)) {
+        // Regular table column can be included in the allColumns.
+        if (in_array($column, $allColumns)) {
             return true;
         }
 
         // Regular table column from the table
         return in_array($column, static::getTableColumns($model->getTable()));
+    }
+
+    /**
+     * Get the actual sortable column.
+     *
+     * @param  string $column
+     * @return string|mixed
+     */
+    public static function getSortableColumn($column)
+    {
+        $model = new static;
+        $allColumns = array_merge($model->searchableColumns(), $model->sortableColumns());
+
+        return BaseGridQuery::findColumn($allColumns, $column);
     }
 
     /**
@@ -229,6 +261,7 @@ trait Searchable
     {
         $this->setSearchableColumns(array_get($config, 'columns'));
         $this->setSearchableJoins(array_get($config, 'joins'));
+        $this->setSortableColumns(array_get($config, 'sortable_columns'));
 
         return $this;
     }
@@ -272,6 +305,25 @@ trait Searchable
     }
 
     /**
+     * Set sortable columns.
+     *
+     * @param array $columns
+     * @return  $this
+     */
+    public function setSortableColumns($columns)
+    {
+        if (property_exists($this, 'sortableColumns')) {
+            $this->sortableColumns = $columns ?? [];
+        }
+
+        if (property_exists($this, 'searchable')) {
+            $this->searchable['sortable_columns'] = $columns ?? [];
+        }
+
+        return $this;
+    }
+
+    /**
      * Add searchable.
      *
      * @param array $config
@@ -287,23 +339,27 @@ trait Searchable
             $this->addSearchableJoins($joins);
         }
 
+        if ($columns = array_get($config, 'sortable_columns')) {
+            $this->addSortableColumns($columns);
+        }
+
         return $this;
     }
 
     /**
      * Add searchable columns.
      *
-     * @param array $config
+     * @param array $columns
      * @return  $this
      */
     public function addSearchableColumns($columns)
     {
         if (property_exists($this, 'searchableColumns')) {
-            $this->searchableColumns = $columns + $this->searchableColumns;
+            $this->searchableColumns = array_merge($this->searchableColumns, $columns);
         }
 
         if (property_exists($this, 'searchable')) {
-            $this->searchable['columns'] = $columns + $this->searchable['columns'];
+            $this->searchable['columns'] = array_merge($this->searchable['columns'], $columns);
         }
 
         return $this;
@@ -312,17 +368,36 @@ trait Searchable
     /**
      * Add searchable joins.
      *
-     * @param array $config
+     * @param array $joins
      * @return  $this
      */
     public function addSearchableJoins($joins)
     {
         if (property_exists($this, 'searchableJoins')) {
-            $this->searchableJoins = $joins + $this->searchableJoins;
+            $this->searchableJoins = array_merge($this->searchableJoins, $joins);
         }
 
         if (property_exists($this, 'searchable')) {
-            $this->searchable['joins'] = $joins + $this->searchable['joins'];
+            $this->searchable['joins'] = array_merge($this->searchable['joins'], $joins);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add sortable columns.
+     *
+     * @param array $columns
+     * @return  $this
+     */
+    public function addSortableColumns($columns)
+    {
+        if (property_exists($this, 'sortableColumns')) {
+            $this->sortableColumns = array_merge($this->sortableColumns, $columns);
+        }
+
+        if (property_exists($this, 'searchable')) {
+            $this->searchable['sortable_columns'] = array_merge($this->searchable['sortable_columns'], $columns);
         }
 
         return $this;
