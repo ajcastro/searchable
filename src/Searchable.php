@@ -136,7 +136,8 @@ trait Searchable
     protected function applySearchableJoins($query)
     {
         foreach ($this->searchableJoins() as $table => $join) {
-            $query->leftJoin($table, $join[0], '=', $join[1]);
+            $joinMethod = $join[2] ?? 'leftJoin';
+            $query->{$joinMethod}($table, $join[0], '=', $join[1]);
         }
     }
 
