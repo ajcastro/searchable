@@ -106,7 +106,8 @@ class Post extends Model
         ],
         // This is needed if there is a need to join other tables for derived columns.
         'joins' => [
-            'authors' => ['authors.id', 'posts.author_id']
+            'authors' => ['authors.id', 'posts.author_id'], // defaults to leftJoin method of eloquent builder
+            'another_table' => ['another_table.id', 'authors.another_table_id', 'join'], // can pass leftJoin, rightJoin, join of eloquent builder.
         ]
     ];
 
