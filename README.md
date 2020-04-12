@@ -200,7 +200,7 @@ Post::search('A post title')->orderBy(Post::getSortableColumn('status_name'));
 // This is beneficial if your column is mapped to a different column name coming from front-end request.
 ```
 
-### Searchable Model Custom Search Query
+### Custom Search Query
 
 Sometimes our queries have lots of things and constraints to do and we can contain it in a search query class like this `PostSearch`.
 
@@ -258,6 +258,44 @@ We can also use custom search query temporarily by passing it as second paramete
 
 ```php
 Post::search('William Shakespeare', new PostSearch)->paginate();
+```
+
+### Custom Search Query - Exact Search Example
+
+You can extend the class `AjCastro\Searchable\Search\SublimeSearch` a.k.a a fuzzy-search implementation.
+
+```php
+namespace App;
+
+use AjCastro\Searchable\Search\SublimeSearch;
+
+class ExactSearch extends SublimeSearch
+{
+    /**
+     * {@inheritDoc}
+     */
+    protected function parseSearchStr($searchStr)
+    {
+        return $searchStr; // produces "where `column` like '{$searchStr}'"
+        // or
+        return "%{$searchStr}%"; // produces "where `column` like '%{$searchStr}%'"
+    }
+}
+```
+
+then use it in the model:
+
+```php
+
+namespace App;
+
+class User extends Model
+{
+    public function defaultSearchQuery()
+    {
+        return new ExactSearch($this, $this->searchableColumns(), $this->sortByRelevance, 'where');
+    }
+}
 ```
 
 ### Using derived columns for order by and where conditions
