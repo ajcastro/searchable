@@ -298,6 +298,20 @@ class User extends Model
 }
 ```
 
+You may also check the build query by dd-ing it:
+
+```php
+
+$query = User::search('John Doe');
+dd($query->toSql());
+```
+which may output to
+```
+select * from users where `column` like 'John Doe'
+// or
+select * from users where `column` like '%John Doe%'
+```
+
 ### Using derived columns for order by and where conditions
 
 Usually we have queries that has a derived columns like our example for `PostSearch`'s `author_full_name`.
