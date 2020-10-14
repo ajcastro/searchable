@@ -8,7 +8,7 @@ Pattern matching search and reusable queries in laravel.
 
 ## Overview
 
-### Full-text search on eloquent models
+### Pattern-matching search on eloquent models
 
 Simple setup for searchable model and can search on derived columns.
 
@@ -43,7 +43,7 @@ Post::search("Some title or body content or even the author's full name")
     ->paginate();
 ```
 
-Imagine we have an api for a table or list that has full-text searching and column sorting and pagination.
+Imagine we have an api for a table or list that has searching and column sorting and pagination.
 This is a usual setup for a table or list. The internal explanations will be available on the documentation below.
 Our api call may look like this:
 
