@@ -1,6 +1,6 @@
 # Searchable
 
-Full-text search and reusable queries in laravel.
+Pattern matching search and reusable queries in laravel.
 
 - Currently supports MySQL only.
 - Helpful for complex table queries with multiple joins and derived columns.
