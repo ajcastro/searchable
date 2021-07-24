@@ -1,0 +1,1 @@
+{"version":1,"defects":{"Tests\\ColumnsTest::test_find_can_return_the_actual_column":3,"Tests\\ColumnsTest::test_selects_can_return_correct_select":4},"times":{"Tests\\ColumnsTest::test_find_can_return_the_actual_column":0.068,"Tests\\ColumnsTest::test_selects_can_return_correct_select":0.012,"Tests\\ColumnsTest::test_keys_should_return_correct_keys":0.006}}

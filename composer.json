@@ -1,7 +1,7 @@
 {
     "name": "ajcastro/searchable",
-    "description": "Full-text search and reusable queries in laravel.",
-    "keywords": ["laravel", "laravel-package", "query", "query-builder", "full-text-search", "eloquent-search", "grid"],
+    "description": "Pattern-matching search for Laravel eloquent models.",
+    "keywords": ["laravel", "laravel-package", "query", "query-builder", "patter-matching-search", "eloquent-search"],
     "license": "MIT",
     "authors": [
         {
@@ -17,8 +17,14 @@
             "AjCastro\\Searchable\\": "src"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "minimum-stability": "dev",
     "require-dev": {
-        "orchestra/testbench": "~3.0"
+        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "9.5.x-dev"
     }
 }
