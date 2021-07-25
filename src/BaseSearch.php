@@ -6,7 +6,6 @@ use AjCastro\Searchable\Columns;
 use AjCastro\Searchable\SearchParsers\CustomSearch;
 use AjCastro\Searchable\SearchParsers\FuzzySearch;
 use AjCastro\Searchable\SearchParsers\ParserInterface;
-use AjCastro\Searchable\SortByRelevance;
 use Illuminate\Database\Eloquent\Builder;
 
 class BaseSearch
@@ -39,22 +38,14 @@ class BaseSearch
      */
     protected ParserInterface $defaultParser;
 
-    /**
-     * If searching will be sorted by _score.
-     * This is the relevance score of the search string.
-     *
-     * @var bool
-     */
-    protected bool $sortByRelevance = true;
-
     public function __construct(Columns $columns)
     {
         $this->columns = $columns;
     }
 
-    public static function make(Columns $columns, bool $sortByRelevance = true, $searchOperator = 'where')
+    public static function make(Columns $columns)
     {
-        return new static($columns, $sortByRelevance, $searchOperator);
+        return new static($columns);
     }
 
     /**
