@@ -1,7 +1,7 @@
 {
     "name": "ajcastro/searchable",
     "description": "Pattern-matching search for Laravel eloquent models.",
-    "keywords": ["laravel", "laravel-package", "query", "query-builder", "patter-matching-search", "eloquent-search"],
+    "keywords": ["laravel", "laravel-package", "query", "query-builder", "pattern-matching-search", "eloquent-search"],
     "license": "MIT",
     "authors": [
         {
