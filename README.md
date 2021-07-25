@@ -255,13 +255,17 @@ Sometimes we need to sort our query results by this column.
 ```php
 $query = Post::query();
 $post = $query->getModel();
-$query->search('Some search')->orderBy($post->getColumn('author_full_name'), 'desc')->paginate(); // (A)
-$query->search('Some search')->where($post->getColumn('author_full_name'), 'William%')->paginate(); // (B)
+// (A)
+$query->search('Some search')->orderBy($post->getColumn('author_full_name'), 'desc')->paginate();
+// (B)
+$query->search('Some search')->where($post->getColumn('author_full_name'), 'William%')->paginate();
 ```
 which may output to
 ```sql
-select * from posts where ... order by CONCAT(authors.first_name, " ", authors.last_name) desc limit 15, 0; -- (A)
-select * from posts where CONCAT(authors.first_name, " ", authors.last_name) like 'William%';  -- (B)
+-- (A)
+select * from posts where ... order by CONCAT(authors.first_name, " ", authors.last_name) desc limit 15, 0;
+-- (B)
+select * from posts where CONCAT(authors.first_name, " ", authors.last_name) like 'William%';
 ```
 
 ## Helper methods available
