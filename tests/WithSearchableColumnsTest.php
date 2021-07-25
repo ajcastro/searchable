@@ -6,7 +6,7 @@ use AjCastro\Searchable\Columns;
 use AjCastro\Searchable\Searchable;
 use Tests\Stubs\Post;
 
-class SearchableTest extends \Orchestra\Testbench\TestCase
+class WithSearchableColumnsTest extends \Orchestra\Testbench\TestCase
 {
     private function postWithSearchableColumns()
     {
