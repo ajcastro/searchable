@@ -70,13 +70,18 @@ class PostsController
                 });
             })
             ->search($request->search)
-            ->sortByRelevance(! $request->has('sort_by'))
-            ->when($query->getModel()->isColumnValid($request->sort_by), function ($query) use ($request) {
-                $query->orderBy(
-                    DB::raw($query->getModel()->getColumn($request->sort_by)),
-                    $request->descending ? 'desc' : 'asc'
-                );
-            })
+            ->when(
+                $request->has('sort_by') && $query->getModel()->isColumnValid($request->sort_by),
+                function ($query) use ($request) {
+                    $query->orderBy(
+                        DB::raw($query->getModel()->getColumn($request->sort_by)),
+                        $request->descending ? 'desc' : 'asc'
+                    );
+                },
+                function ($query) {
+                    $query->sortByRelevance();
+                },
+            )
             ->paginate();
     }
 
