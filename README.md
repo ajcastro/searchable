@@ -15,8 +15,6 @@ See [demo project](https://github.com/ajcastro/searchable-demo).
 Simple setup for searchable model and can search on derived columns.
 
 ```php
-use AjCastro\Searchable\Search\SublimeSearch;
-
 class Post
 {
     use Searchable;
@@ -220,7 +218,7 @@ Post::search('A post title')->orderBy(Post::make()->getSortableColumn('status_na
 Override the `deafultSearchQuery` in the model like so:
 
 ```php
-namespace App;
+use AjCastro\Searchable\BaseSearch;
 
 class User extends Model
 {
