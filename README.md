@@ -15,6 +15,8 @@ See [demo project](https://github.com/ajcastro/searchable-demo).
 Simple setup for searchable model and can search on derived columns.
 
 ```php
+use AjCastro\Searchable\Searchable;
+
 class Post
 {
     use Searchable;
