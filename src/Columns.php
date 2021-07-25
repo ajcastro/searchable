@@ -23,6 +23,7 @@ class Columns
     protected array $columns;
 
     protected array $selects = [];
+    protected array $actual = [];
     protected array $keys = [];
     protected array $cache;
 
@@ -34,26 +35,6 @@ class Columns
     public static function make(array $columns)
     {
         return new static($columns);
-    }
-
-    /**
-     * Return the columns as a valid select array for query builder's select() method.
-     */
-    public function selects(): array
-    {
-        if (! empty($this->selects)) return $this->selects;
-
-        foreach ($this->columns as $key => $select) {
-            if (is_string($key)) {
-                $select = $select . ' as ' . $key;
-            }
-            if (Str::contains($select, ' as ')) {
-                $select = DB::raw($select);
-            }
-            $this->selects[] = $select;
-        }
-
-        return $this->selects;
     }
 
     /**
@@ -84,6 +65,42 @@ class Columns
     }
 
     /**
+     * Return the columns as a valid select array for query builder's select() method.
+     */
+    public function selects(): array
+    {
+        if (!empty($this->selects)) return $this->selects;
+
+        foreach ($this->columns as $key => $select) {
+            if (is_string($key)) {
+                $select = $select . ' as ' . $key;
+            }
+            if (Str::contains($select, ' as ')) {
+                $select = DB::raw($select);
+            }
+            $this->selects[] = $select;
+        }
+
+        return $this->selects;
+    }
+
+    /**
+     * Get the actual columns that are in the database table.
+     *
+     * @return array
+     */
+    public function actual(): array
+    {
+        if (! empty($this->actual)) return $this->actual;
+
+        foreach ($this->selects() as $select) {
+            $this->actual[] = static::extractActualFromSelect($select);
+        }
+
+        return $this->actual;
+    }
+
+    /**
      * Return the valid column keys which can be used as reference name for query sort.
      *
      * @return array
@@ -109,6 +126,16 @@ class Columns
         if (Str::contains($select, '.')) {
             [$table, $column] = explode('.', $select);
             return $column;
+        }
+
+        return $select;
+    }
+
+    public static function extractActualFromSelect(string $select): string
+    {
+        if (Str::contains($select, ' as ')) {
+            [$rawSelect, $alias] = explode(' as ', $select);
+            return $rawSelect;
         }
 
         return $select;

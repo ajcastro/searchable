@@ -6,30 +6,30 @@ use AjCastro\Searchable\Columns;
 
 class ColumnsTest extends \Orchestra\Testbench\TestCase
 {
-    public function test_find_can_return_the_actual_column()
+    protected Columns $columns;
+
+    public function setUp(): void
     {
-        $columns = Columns::make([
+        parent::setUp();
+
+        $this->columns = Columns::make([
             'posts.title',
             'description',
             'author_name' => 'authors.name',
             'authors.age as author_age',
         ]);
+    }
 
-        $this->assertEquals('posts.title', $columns->title);
-        $this->assertEquals('description', $columns->description);
-        $this->assertEquals('authors.name', $columns->author_name);
-        $this->assertEquals('authors.age', $columns->author_age);
+    public function test_find_can_return_the_actual_column()
+    {
+        $this->assertEquals('posts.title', $this->columns->title);
+        $this->assertEquals('description', $this->columns->description);
+        $this->assertEquals('authors.name', $this->columns->author_name);
+        $this->assertEquals('authors.age', $this->columns->author_age);
     }
 
     public function test_selects_can_return_correct_select()
     {
-        $columns = Columns::make([
-            'posts.title',
-            'description',
-            'author_name' => 'authors.name',
-            'authors.age as author_age',
-        ]);
-
         $asserts = [
             'posts.title',
             'description',
@@ -37,7 +37,7 @@ class ColumnsTest extends \Orchestra\Testbench\TestCase
             'authors.age as author_age',
         ];
 
-        $selects = $columns->selects();
+        $selects = $this->columns->selects();
 
         foreach ($asserts as $index => $assert) {
             $this->assertEquals($assert, $selects[$index]);
@@ -46,13 +46,6 @@ class ColumnsTest extends \Orchestra\Testbench\TestCase
 
     public function test_keys_should_return_correct_keys()
     {
-        $columns = Columns::make([
-            'posts.title',
-            'description',
-            'author_name' => 'authors.name',
-            'authors.age as author_age',
-        ]);
-
         $asserts = [
             'title',
             'description',
@@ -60,7 +53,23 @@ class ColumnsTest extends \Orchestra\Testbench\TestCase
             'author_age',
         ];
 
-        $keys = $columns->keys();
+        $keys = $this->columns->keys();
+
+        foreach ($asserts as $index => $assert) {
+            $this->assertEquals($assert, $keys[$index]);
+        }
+    }
+
+    public function test_actual_should_return_correct_actual_columns()
+    {
+        $asserts = [
+            'posts.title',
+            'description',
+            'authors.name',
+            'authors.age',
+        ];
+
+        $keys = $this->columns->actual();
 
         foreach ($asserts as $index => $assert) {
             $this->assertEquals($assert, $keys[$index]);
