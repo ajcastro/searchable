@@ -63,6 +63,12 @@ class PostsController
         $query = Post::query();
 
         return $query
+            ->with('author')
+            ->when($request->parse_using === 'exact', function ($query) {
+                $query->getModel()->searchQuery()->parseUsing(function ($searchStr) {
+                    return "%{$searchStr}%";
+                });
+            })
             ->search($request->search)
             ->sortByRelevance(! $request->has('sort_by'))
             ->when($query->getModel()->isColumnValid($request->sort_by), function ($query) use ($request) {
