@@ -47,11 +47,9 @@ class BaseSearch
      */
     protected bool $sortByRelevance = true;
 
-    public function __construct(Columns $columns, bool $sortByRelevance = true, $searchOperator = 'where')
+    public function __construct(Columns $columns)
     {
         $this->columns = $columns;
-        $this->sortByRelevance($sortByRelevance);
-        $this->searchOperator = $searchOperator;
     }
 
     public static function make(Columns $columns, bool $sortByRelevance = true, $searchOperator = 'where')
@@ -84,10 +82,6 @@ class BaseSearch
 
         $method = $this->searchOperator . 'Raw';
         $query->{$method}('(' . join(' OR ', $conditions) . ')');
-
-        if ($this->shouldSortByRelevance()) {
-            $this->applySortByRelevance();
-        }
 
         return $query;
     }
@@ -157,34 +151,6 @@ class BaseSearch
     }
 
     /**
-     * Set sort by relevance boolean.
-     *
-     * @param  bool $bool
-     * @return $this
-     */
-    public function sortByRelevance($sortByRelevance = true)
-    {
-        $this->sortByRelevance = $sortByRelevance;
-
-        return $this;
-    }
-
-    /**
-     * Whether this search query should sort by relevance with key of `sort_index`.
-     *
-     * @return boolean
-     */
-    public function shouldSortByRelevance()
-    {
-        return $this->sortByRelevance;
-    }
-
-    public function applySortByRelevance()
-    {
-        SortByRelevance::sort($this->query, $this->sortColumns(), $this->searchStr);
-    }
-
-    /**
      * Return the searchable columns to compare, actual columns for `where` operator and alias column names for `having` operator.
      *
      * @return array
@@ -195,12 +161,12 @@ class BaseSearch
     }
 
     /**
-     * Return the columns for sorting query.
+     * Return the search string.
      *
-     * @return array
+     * @return string
      */
-    protected function sortColumns()
+    public function getSearchStr()
     {
-        return $this->columns->keys();
+        return $this->searchStr;
     }
 }

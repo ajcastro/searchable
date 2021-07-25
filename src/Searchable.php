@@ -113,6 +113,10 @@ trait Searchable
      */
     public function scopeSortByRelevance($query, $sortByRelevance = true)
     {
-        $query->getModel()->searchQuery()->sortByRelevance($sortByRelevance);
+        $sortByRelevance && SortByRelevance::sort(
+            $query,
+            $this->buildAllColumns()->actual(),
+            $query->getModel()->searchQuery()->getSearchStr()
+        );
     }
 }

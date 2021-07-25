@@ -59,8 +59,8 @@ class PostsController
         $query = Post::query();
 
         return $query
-            ->sortByRelevance(! $request->has('sort_by'))
             ->search($request->search)
+            ->sortByRelevance(! $request->has('sort_by'))
             ->when($query->getModel()->isColumnValid($request->sort_by), function ($query) use ($request) {
                 $query->orderBy(
                     DB::raw($query->getModel()->getColumn($request->sort_by)),
@@ -138,12 +138,12 @@ Post::where('likes', '>', 100)->search('Some post')->paginate();
 ```
 
 This will addSelect field `sort_index` which will used to order or sort by relevance.
-If you want to disable sort by relevance, call method `sortByRelevance(false)` before `search()` method.
+If you want to sort by relevance, call method `sortByRelevance()` after `search()` method.
 Example:
 
 ```
-Post::sortByRelevance(false)->search('Some post')->paginate();
-Post::sortByRelevance(false)->where('likes', '>', 100)->search('Some post')->paginate();
+Post::search('Some post')->sortByRelevance()->paginate();
+Post::where('likes', '>', 100)->search('Some post')->sortByRelevance()->paginate();
 ```
 
 ### Set searchable configurations on runtime.
