@@ -263,9 +263,9 @@ $query->search('Some search')->where($post->getColumn('author_full_name'), 'Will
 which may output to
 ```sql
 -- (A)
-select * from posts where ... order by CONCAT(authors.first_name, " ", authors.last_name) desc limit 15, 0;
+select * from posts where ... order by CONCAT(authors.first_name, " ", authors.last_name) desc limit 0, 15;
 -- (B)
-select * from posts where CONCAT(authors.first_name, " ", authors.last_name) like 'William%';
+select * from posts where ... and CONCAT(authors.first_name, " ", authors.last_name) like 'William%' limit 0, 15;
 ```
 
 ## Helper methods available
