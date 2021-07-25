@@ -17,7 +17,7 @@ trait Searchable
     /**
      * Apply searchable joins for the search query.
      *
-     * @param  $query
+     * @param  \Illuminate\Database\Eloquent\Builder $query
      * @return void
      */
     protected function applySearchableJoins($query)
