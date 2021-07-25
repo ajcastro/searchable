@@ -115,7 +115,7 @@ trait Searchable
     {
         $sortByRelevance && SortByRelevance::sort(
             $query,
-            $this->buildAllColumns()->actual(),
+            $this->buildSearchableColumns()->actual(),
             $query->getModel()->searchQuery()->getSearchStr()
         );
     }
