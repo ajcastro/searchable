@@ -153,8 +153,9 @@ Post::where('likes', '>', 100)->search('Some post')->paginate();
 
 ```
 
-This will addSelect field `sort_index` which will used to order or sort by relevance.
 If you want to sort by relevance, call method `sortByRelevance()` after `search()` method.
+This will addSelect field `sort_index` which will be used to order or sort by relevance.
+
 Example:
 
 ```
