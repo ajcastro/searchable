@@ -1,19 +1,17 @@
 # Searchable
 
-Pattern matching search and reusable queries in laravel.
+Pattern-matching search for Laravel eloquent models.
 
 - Currently supports MySQL only.
 - Helpful for complex table queries with multiple joins and derived columns.
-- Reusable queries and column definitions.
+- Fluent columns definitions.
 
 ## Overview
-
-### Pattern-matching search on eloquent models
 
 Simple setup for searchable model and can search on derived columns.
 
 ```php
-use AjCastro\Searchable\Searchable;
+use AjCastro\Searchable\Search\SublimeSearch;
 
 class Post
 {
@@ -56,18 +54,17 @@ Your code can look like this:
 ```php
 class PostsController
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Post::sortByRelevance(!request()->bool('sort_by'))
-            ->search(request('search'))
-            ->when(Post::isColumnValid($sortColumn = request('sort_by')), function ($query) use ($sortColumn) {
+        $query = Post::query();
+
+        return $query
+            ->sortByRelevance(! $request->has('sort_by'))
+            ->search($request->search)
+            ->when($query->getModel()->isColumnValid($request->sort_by), function ($query) use ($request) {
                 $query->orderBy(
-                    \DB::raw(
-                        (new Post)->getSortableColumn($sortColumn) ?? // valid sortable column
-                        (new Post)->searchQuery()->getColumn($sortColumn) ?? // valid search column
-                        $sortColumn // valid original table column
-                    ),
-                    request()->bool('descending') ? 'desc' : 'asc'
+                    DB::raw($query->getModel()->getColumn($request->sort_by)),
+                    $request->descending ? 'desc' : 'asc'
                 );
             })
             ->paginate();
@@ -195,36 +192,15 @@ class Post {
 
 // Usage
 
-Post::search('A post title')->orderBy(Post::getSortableColumn('status_name'));
+Post::search('A post title')->orderBy(Post::make()->getSortableColumn('status_name'));
 // This will only perform search on `posts`.`title` column and it will append "order by `statuses`.`name`" in the query.
 // This is beneficial if your column is mapped to a different column name coming from front-end request.
 ```
 
 
-### Custom Search Query - Exact Search Example
+### Custom Search String Parser - Exact Search Example
 
-You can extend the class `AjCastro\Searchable\Search\SublimeSearch` a.k.a a fuzzy-search implementation.
-
-```php
-namespace App;
-
-use AjCastro\Searchable\Search\SublimeSearch;
-
-class ExactSearch extends SublimeSearch
-{
-    /**
-     * {@inheritDoc}
-     */
-    protected function parseSearchStr($searchStr)
-    {
-        return $searchStr; // produces "where `column` like '{$searchStr}'"
-        // or
-        return "%{$searchStr}%"; // produces "where `column` like '%{$searchStr}%'"
-    }
-}
-```
-
-then use it in the model:
+Override the `deafultSearchQuery` in the model like so:
 
 ```php
 namespace App;
@@ -233,7 +209,11 @@ class User extends Model
 {
     public function defaultSearchQuery()
     {
-        return new ExactSearch($this, $this->searchableColumns(), $this->sortByRelevance, 'where');
+        return BaseSearch::make($this->buildSearchableColumns())
+            ->parseUsing(function ($searchStr) {
+                return $searchStr; // produces "where `column` like '{$searchStr}'"
+                return "%{$searchStr}%"; // produces "where `column` like '%{$searchStr}%'"
+            });
     }
 }
 ```
@@ -257,27 +237,29 @@ Usually we have queries that has a derived columns like our example for `Post`'s
 Sometimes we need to sort our query results by this column.
 
 ```php
-Post::search('Some search')->orderBy(Post::searchQuery()->author_full_name, 'desc')->paginate();
-Post::search('Some search')->where(Post::searchQuery()->author_full_name, 'William%')->paginate();
+$query = Post::query();
+$post = $query->getModel();
+$query->search('Some search')->orderBy($post->getColumn('author_full_name'), 'desc')->paginate();
+$query->search('Some search')->where($post->getColumn('author_full_name'), 'William%')->paginate();
 ```
 
-## Helper methods available on model
+## Helper methods available
 
-### isColumnValid [static]
-
-- Identifies if the column is a valid column, either a regular table column or derived column.
-- Useful for checking valid columns to avoid sql injection especially in `orderBy` query.
-
-```php
-Post::isColumnValid(request('sort_by'));
-```
-
-### getTableColumns [static]
+### TableColumns::get() [static]
 
 - Get the table columns.
 
 ```php
-Post::getTableColumns();
+TableColumns::get('posts');
+```
+
+### isColumnValid
+
+- Identifies if the column is a valid column, either a regular table column or derived column.
+- Useful for checking valid columns to avoid sql injection especially in `orderBy` query, [see post](https://freek.dev/1317-an-important-security-release-for-laravel-query-builder).
+
+```php
+$query->getModel()->isColumnValid(request('sort_by'));
 ```
 
 ### enableSearchable
@@ -328,7 +310,7 @@ $query->search('foo');
 ## Warning
 
 Calling `select()` after `search()` will overwrite `sort_index` field, so it is recommended to call `select()`
-before `search()`.
+before `search()`. Or you can use `addSelect()` instead.
 
 ## Credits
 
