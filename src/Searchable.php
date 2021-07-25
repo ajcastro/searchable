@@ -2,6 +2,10 @@
 
 namespace AjCastro\Searchable;
 
+/**
+ * @method \Illuminate\Database\Eloquent\Builder sortByRelevance($sortByRelevance = true)
+ * @method \Illuminate\Database\Eloquent\Builder search($search)
+ */
 trait Searchable
 {
     use WithSearchableColumns;
