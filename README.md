@@ -64,6 +64,7 @@ class PostsController
 
         return $query
             ->with('author')
+            // advance usage with custom search string parsing
             ->when($request->parse_using === 'exact', function ($query) {
                 $query->getModel()->searchQuery()->parseUsing(function ($searchStr) {
                     return "%{$searchStr}%";
