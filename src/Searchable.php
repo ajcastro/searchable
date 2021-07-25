@@ -8,11 +8,7 @@ use AjCastro\Searchable\Search\SublimeSearch;
 
 trait Searchable
 {
-    protected static $allSearchableColumns = [];
-
     protected $searchableEnabled = true;
-
-    protected $sortByRelevance = true;
 
     protected $searchQuery;
 
@@ -31,7 +27,7 @@ trait Searchable
             return $this->searchable['columns'];
         }
 
-        return static::getTableColumns($this->getTable());
+        return TableColumns::get($this->getTable());
     }
 
     /**
@@ -49,24 +45,7 @@ trait Searchable
             return $this->searchable['sortable_columns'];
         }
 
-        return static::getTableColumns($this->getTable());
-    }
-
-    /**
-     * Get table columns.
-     *
-     * @param  string $table
-     * @return array
-     */
-    public static function getTableColumns($table = null)
-    {
-        $table = $table ?? (new static)->getTable();
-
-        if (!Arr::has(static::$allSearchableColumns, $table)) {
-            static::$allSearchableColumns[$table] = Schema::getColumnListing($table);
-        }
-
-        return static::$allSearchableColumns[$table];
+        return TableColumns::get($this->getTable());
     }
 
     /**
@@ -76,23 +55,45 @@ trait Searchable
      * @param  string  $column
      * @return boolean
      */
-    public static function isColumnValid($column)
+    public function isColumnValid($column)
     {
-        $model = new static;
-        $allColumns = array_merge($model->searchableColumns(), $model->sortableColumns());
+        return (bool) $this->buildAllColumns()->find($column);
+    }
 
-        // Derived columns are a key in allColumns.
-        if (array_key_exists($column, $allColumns)) {
-            return true;
-        }
 
-        // Regular table column can be included in the allColumns.
-        if (in_array($column, $allColumns)) {
-            return true;
-        }
+    /**
+     * Build columns from both searchable and sortable columns
+     */
+    public function buildAllColumns(): Columns
+    {
+        return Columns::make(array_merge($this->searchableColumns(), $this->sortableColumns()));
+    }
 
-        // Regular table column from the table
-        return in_array($column, static::getTableColumns($model->getTable()));
+    /**
+     * Build columns from searchable
+     */
+    public function buildSearchableColumns(): Columns
+    {
+        return Columns::make($this->searchableColumns());
+    }
+
+    /**
+     * Build columns from sortable
+     */
+    public function buildSortableColumns(): Columns
+    {
+        return Columns::make($this->sortableColumns());
+    }
+
+    /**
+     * Get the actual column from both searchable and sortable columns
+     *
+     * @param string $column
+     * @return void
+     */
+    public function getColumn($column)
+    {
+        return $this->buildAllColumns()->find($column);
     }
 
     /**
@@ -101,12 +102,20 @@ trait Searchable
      * @param  string $column
      * @return string|mixed
      */
-    public static function getSortableColumn($column)
+    public function getSearchableColumn($column)
     {
-        $model = new static;
-        $allColumns = array_merge($model->searchableColumns(), $model->sortableColumns());
+        return $this->buildSearchableColumns()->find($column);
+    }
 
-        return BaseGridQuery::findColumn($allColumns, $column);
+    /**
+     * Get the actual sortable column.
+     *
+     * @param  string $column
+     * @return string|mixed
+     */
+    public function getSortableColumn($column)
+    {
+        return $this->buildSortableColumns()->find($column);
     }
 
     /**
@@ -144,9 +153,9 @@ trait Searchable
     /**
      * Return the search query.
      *
-     * @return mixed|\AjCastro\Searchable\Search\SublimeSearch
+     * @return \AjCastro\Searchable\BaseSearch
      */
-    public function searchQuery()
+    public function searchQuery(): BaseSearch
     {
         if ($this->searchQuery) {
             return $this->searchQuery;
@@ -156,15 +165,15 @@ trait Searchable
             return $this->searchQuery = $this->defaultSearchQuery();
         }
 
-        return $this->searchQuery = new SublimeSearch($this, $this->searchableColumns(), $this->sortByRelevance, 'where');
+        return $this->searchQuery = new BaseSearch($this->buildSearchableColumns());
     }
 
     /**
      * Set the model's search query.
      *
-     * @param  \AjCastro\Searchable\BaseSearchQuery $searchQuery
+     * @param  \AjCastro\Searchable\BaseSearch $searchQuery
      */
-    public function setSearchQuery($searchQuery)
+    public function setSearchQuery(BaseSearch $searchQuery)
     {
         $this->searchQuery = $searchQuery;
 
@@ -196,7 +205,7 @@ trait Searchable
     /**
      * Apply search in the query.
      *
-     * @param  query $query
+     * @param  \Illuminate\Database\Eloquent\Builder $query
      * @param  string $search
      *
      * @return void
@@ -213,7 +222,7 @@ trait Searchable
             $query->select([$query->getQuery()->from.'.*']);
         }
 
-        $this->searchQuery()->setQuery($query)->search($search);
+        $query->getModel()->searchQuery()->setQuery($query)->search($search);
     }
 
     /**
@@ -224,32 +233,7 @@ trait Searchable
      */
     public function scopeSortByRelevance($query, $sortByRelevance = true)
     {
-        $query->getModel()->searchableSortByRelevance($sortByRelevance);
-    }
-
-    /**
-     * Set model's $sortByRelevance for searchable query.
-     *
-     * @param  boolean $sortByRelevance
-     * @return $this
-     */
-    public function searchableSortByRelevance($sortByRelevance = true)
-    {
-        $this->sortByRelevance = $sortByRelevance;
-
-        $this->searchQuery()->sortByRelevance($sortByRelevance);
-
-        return $this;
-    }
-
-    /**
-     * If model should sort by relevance.
-     *
-     * @return bool
-     */
-    public function shouldSortByRelevance()
-    {
-        return $this->sortByRelevance;
+        $query->getModel()->searchQuery()->sortByRelevance($sortByRelevance);
     }
 
     /**
@@ -260,9 +244,9 @@ trait Searchable
      */
     public function setSearchable($config)
     {
-        $this->setSearchableColumns(array_get($config, 'columns'));
-        $this->setSearchableJoins(array_get($config, 'joins'));
-        $this->setSortableColumns(array_get($config, 'sortable_columns'));
+        $this->setSearchableColumns(Arr::get($config, 'columns'));
+        $this->setSearchableJoins(Arr::get($config, 'joins'));
+        $this->setSortableColumns(Arr::get($config, 'sortable_columns'));
 
         return $this;
     }
@@ -332,16 +316,16 @@ trait Searchable
      */
     public function addSearchable($config)
     {
-        if ($columns = array_get($config, 'columns')) {
+        if ($columns = Arr::get($config, 'columns')) {
             $this->addSearchableColumns($columns);
         }
 
-        if ($joins = array_get($config, 'joins')) {
-            $this->addSearchableJoins($joins);
+        if ($columns = Arr::get($config, 'sortable_columns')) {
+            $this->addSortableColumns($columns);
         }
 
-        if ($columns = array_get($config, 'sortable_columns')) {
-            $this->addSortableColumns($columns);
+        if ($joins = Arr::get($config, 'joins')) {
+            $this->addSearchableJoins($joins);
         }
 
         return $this;

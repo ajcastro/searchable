@@ -47,12 +47,16 @@ class BaseSearch
      */
     protected bool $sortByRelevance = true;
 
-    public function __construct(Builder $query, Columns $columns, bool $sortByRelevance = true, $searchOperator = 'where')
+    public function __construct(Columns $columns, bool $sortByRelevance = true, $searchOperator = 'where')
     {
-        $this->query = $query;
         $this->columns = $columns;
         $this->sortByRelevance($sortByRelevance);
         $this->searchOperator = $searchOperator;
+    }
+
+    public static function make(Columns $columns, bool $sortByRelevance = true, $searchOperator = 'where')
+    {
+        return new static($columns, $sortByRelevance, $searchOperator);
     }
 
     /**
@@ -122,6 +126,19 @@ class BaseSearch
     public function parseUsing(callable $callback)
     {
         $this->defaultParser = new CustomSearch($callback);
+
+        return $this;
+    }
+
+    /**
+     * Set query.
+     *
+     * @param Builder $query
+     * @return $this
+     */
+    public function setQuery(Builder $query)
+    {
+        $this->query = $query;
 
         return $this;
     }

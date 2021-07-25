@@ -5,6 +5,7 @@ namespace Tests;
 use AjCastro\Searchable\BaseSearch;
 use AjCastro\Searchable\Columns;
 use Faker\Provider\Base;
+use Tests\Stubs\Post;
 
 class BaseSearchTest extends \Orchestra\Testbench\TestCase
 {
@@ -14,15 +15,15 @@ class BaseSearchTest extends \Orchestra\Testbench\TestCase
     {
         parent::setUp();
 
-        $this->search = new BaseSearch(
-            Post::query(),
+        $this->search = BaseSearch::make(
             Columns::make([
                 'posts.title',
                 'description',
                 'author_name' => 'authors.name',
                 'authors.age as author_age',
             ]),
-        );
+        )
+        ->setQuery(Post::query());
     }
 
     public function test_can_initialize_base_search_and_perform_a_search()
@@ -53,8 +54,4 @@ class BaseSearchTest extends \Orchestra\Testbench\TestCase
             'author_age',
         ], $this->search->columnsToCompare());
     }
-}
-
-class Post extends \Illuminate\Database\Eloquent\Model
-{
 }
