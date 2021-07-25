@@ -8,7 +8,7 @@ class ColumnsTest extends \Orchestra\Testbench\TestCase
 {
     public function test_find_can_return_the_actual_column()
     {
-        $columns = new Columns([
+        $columns = Columns::make([
             'posts.title',
             'description',
             'author_name' => 'authors.name',
@@ -23,7 +23,7 @@ class ColumnsTest extends \Orchestra\Testbench\TestCase
 
     public function test_selects_can_return_correct_select()
     {
-        $columns = new Columns([
+        $columns = Columns::make([
             'posts.title',
             'description',
             'author_name' => 'authors.name',
@@ -46,7 +46,7 @@ class ColumnsTest extends \Orchestra\Testbench\TestCase
 
     public function test_keys_should_return_correct_keys()
     {
-        $columns = new Columns([
+        $columns = Columns::make([
             'posts.title',
             'description',
             'author_name' => 'authors.name',

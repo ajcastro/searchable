@@ -31,6 +31,11 @@ class Columns
         $this->columns = $columns;
     }
 
+    public static function make(array $columns)
+    {
+        return new static($columns);
+    }
+
     /**
      * Return the columns as a valid select array for query builder's select() method.
      */
