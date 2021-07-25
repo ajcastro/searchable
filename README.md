@@ -6,6 +6,10 @@ Pattern-matching search for Laravel eloquent models.
 - Helpful for complex table queries with multiple joins and derived columns.
 - Fluent columns definitions.
 
+## Demo Project
+
+See [demo project](https://github.com/ajcastro/searchable-demo).
+
 ## Overview
 
 Simple setup for searchable model and can search on derived columns.
