@@ -119,4 +119,16 @@ trait Searchable
             $query->getModel()->searchQuery()->getSearchStr()
         );
     }
+
+    /**
+     * Override search string parser
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param callable $parser
+     * @return void
+     */
+    public function scopeParseUsing($query, callable $parser)
+    {
+        $query->getModel()->searchQuery()->parseUsing($parser);
+    }
 }

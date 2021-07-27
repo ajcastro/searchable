@@ -2,6 +2,11 @@
 
 All notable changes to `ajcastro/searchable` will be documented in this file
 
+## 2.0.1 (2021-07-28)
+
+### Added
+- Added scope method `parseUsing()` to override the default fuzzy search.
+
 ## 2.0.0 (2021-07-25)
 
 ### Added
@@ -18,3 +23,6 @@ All notable changes to `ajcastro/searchable` will be documented in this file
 
 ### Removed
 - Remove method `\AjCastro\Searchable\Searchable::getTableColumns()`.
+- Remove `AjCastro\Searchable\Search\SublimeSearch`.
+- Remove `AjCastro\Searchable\BaseGridQuery`.
+- Remove `AjCastro\Searchable\BaseSearchQuery`.
