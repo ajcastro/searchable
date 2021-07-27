@@ -5,7 +5,7 @@ All notable changes to `ajcastro/searchable` will be documented in this file
 ## 2.0.1 (2021-07-28)
 
 ### Added
-- Added scope method `parseUsing()` to override the default fuzzy search.
+- Added scope method `\AjCastro\Searchable\Searchable::scopeParseUsing()` to override the default fuzzy search.
 
 ## 2.0.0 (2021-07-25)
 
